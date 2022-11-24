@@ -1,0 +1,29 @@
+server_port: 8096
+
+log_config:
+  log_level: INFO
+  log_path: ./log/default.log                             
+  max_size: 10       # (MB)                               
+  max_age: 30        # (day)                            
+  max_backups: 1000    
+  show_line: true
+  show_color: true
+  is_brief: false
+  json_format: false    
+  log_in_console: false                    
+
+db_config:
+  user: root
+  password: 123456
+  ip: 127.0.0.1
+  port: 3306
+  dbname: chainmaker
+
+block_chain_config:
+  - user_id: admin1
+    chain_id: master
+    sdk_config_path: ../conf/masterchain_sdk_config.yaml
+
+  - user_id: admin2
+    chain_id: satellite
+    sdk_config_path: ../conf/satellitechain_sdk_config.yaml
