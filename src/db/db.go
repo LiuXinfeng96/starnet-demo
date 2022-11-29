@@ -28,7 +28,7 @@ func getDBConfig(dbConf *DBConfig) string {
 }
 
 // DbInit db init
-func GormInit(dbConf *DBConfig, schemaSlice []interface{},
+func GormInit(dbConf *DBConfig, tableSlice []interface{},
 	zaplogger *zap.SugaredLogger) (*gorm.DB, error) {
 	var err error
 	gormDb, err := gorm.Open(mysql.New(mysql.Config{
@@ -63,7 +63,7 @@ func GormInit(dbConf *DBConfig, schemaSlice []interface{},
 		Set("gorm:association_autocreate", false).
 		Set("gorm:table_options", "ENGINE=InnoDB")
 	err = gormDb.Set("gorm:table_options", "CHARSET=utf8").
-		Set("gorm:table_options", "COLLATE=utf8_general_ci").AutoMigrate(schemaSlice...)
+		Set("gorm:table_options", "COLLATE=utf8_general_ci").AutoMigrate(tableSlice...)
 	if err != nil {
 		return nil, err
 	}

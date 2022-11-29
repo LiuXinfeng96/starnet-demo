@@ -19,5 +19,5 @@ func (c *Constellation) TableName() string {
 
 func init() {
 	constellation := new(Constellation)
-	SchemaSlice = append(SchemaSlice, &constellation)
+	TableSlice = append(TableSlice, &constellation)
 }

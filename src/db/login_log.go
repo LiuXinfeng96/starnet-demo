@@ -16,5 +16,5 @@ func (l *LoginLog) TableName() string {
 
 func init() {
 	loginLog := new(LoginLog)
-	SchemaSlice = append(SchemaSlice, &loginLog)
+	TableSlice = append(TableSlice, &loginLog)
 }

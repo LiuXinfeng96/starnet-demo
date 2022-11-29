@@ -80,5 +80,5 @@ func (i *Instruction) TableName() string {
 
 func init() {
 	instruction := new(Instruction)
-	SchemaSlice = append(SchemaSlice, &instruction)
+	TableSlice = append(TableSlice, &instruction)
 }

@@ -51,13 +51,13 @@ func WithGormDb(db *gorm.DB) Option {
 	}
 }
 
-func NewServer(opts ...Option) error {
+func NewServer(opts ...Option) (*Server, error) {
 	server := new(Server)
 	for _, opt := range opts {
 		opt(server)
 	}
 
-	return nil
+	return server, nil
 }
 
 func (s *Server) Start() error {

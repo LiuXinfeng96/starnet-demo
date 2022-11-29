@@ -18,5 +18,5 @@ func (c *Control) TableName() string {
 
 func init() {
 	control := new(Control)
-	SchemaSlice = append(SchemaSlice, &control)
+	TableSlice = append(TableSlice, &control)
 }

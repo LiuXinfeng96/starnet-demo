@@ -45,5 +45,5 @@ func (s *Satellite) TableName() string {
 
 func init() {
 	satellite := new(Satellite)
-	SchemaSlice = append(SchemaSlice, &satellite)
+	TableSlice = append(TableSlice, &satellite)
 }

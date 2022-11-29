@@ -50,5 +50,5 @@ func (d *Debris) TableName() string {
 
 func init() {
 	debris := new(Debris)
-	SchemaSlice = append(SchemaSlice, &debris)
+	TableSlice = append(TableSlice, &debris)
 }

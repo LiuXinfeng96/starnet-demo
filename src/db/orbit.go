@@ -20,5 +20,5 @@ func (o *Orbit) TableName() string {
 
 func init() {
 	orbit := new(Orbit)
-	SchemaSlice = append(SchemaSlice, &orbit)
+	TableSlice = append(TableSlice, &orbit)
 }

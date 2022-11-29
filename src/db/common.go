@@ -1,6 +1,6 @@
 package db
 
-var SchemaSlice = make([]interface{}, 0)
+var TableSlice = make([]interface{}, 0)
 
 type GeneralField struct {
 	Id       int32 `gorm:"primaryKey;autoIncrement"`

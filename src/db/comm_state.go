@@ -20,5 +20,5 @@ func (c *CommState) TableName() string {
 
 func init() {
 	commState := new(CommState)
-	SchemaSlice = append(SchemaSlice, &commState)
+	TableSlice = append(TableSlice, &commState)
 }

@@ -15,12 +15,26 @@ func main() {
 		panic(err)
 	}
 
-	sugaredLogger, _ := loggers.InitLogger(conf.LogConfig)
+	sugaredLogger, logger := loggers.InitLogger(conf.LogConfig)
 
-	_, err = db.GormInit(conf.DBConfig, db.SchemaSlice, sugaredLogger)
+	db, err := db.GormInit(conf.DBConfig, db.TableSlice, sugaredLogger)
 	if err != nil {
 		panic(err)
 	}
 
-	services.NewServer(w)
+	server, err := services.NewServer(services.WithConfig(conf),
+		services.WithGinEngin(),
+		services.WithGormDb(db),
+		services.WithLog(logger),
+		services.WithSuLog(sugaredLogger),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	err = server.Start()
+	if err != nil {
+		panic(err)
+	}
+
 }

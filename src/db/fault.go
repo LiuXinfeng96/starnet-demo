@@ -20,5 +20,5 @@ func (f *Fault) TableName() string {
 
 func init() {
 	fault := new(Fault)
-	SchemaSlice = append(SchemaSlice, &fault)
+	TableSlice = append(TableSlice, &fault)
 }

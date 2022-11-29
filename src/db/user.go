@@ -46,5 +46,5 @@ func (u *User) TableName() string {
 
 func init() {
 	user := new(User)
-	SchemaSlice = append(SchemaSlice, &user)
+	TableSlice = append(TableSlice, &user)
 }

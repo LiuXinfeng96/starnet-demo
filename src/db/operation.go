@@ -19,5 +19,5 @@ func (o *Operation) TableName() string {
 
 func init() {
 	operation := new(Operation)
-	SchemaSlice = append(SchemaSlice, &operation)
+	TableSlice = append(TableSlice, &operation)
 }

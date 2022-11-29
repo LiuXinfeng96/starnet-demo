@@ -19,5 +19,5 @@ func (n *NetState) TableName() string {
 
 func init() {
 	netState := new(NetState)
-	SchemaSlice = append(SchemaSlice, &netState)
+	TableSlice = append(TableSlice, &netState)
 }

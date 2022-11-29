@@ -93,5 +93,5 @@ func (b *BlockChainIdentity) TableName() string {
 
 func init() {
 	blockChainIdentity := new(BlockChainIdentity)
-	SchemaSlice = append(SchemaSlice, &blockChainIdentity)
+	TableSlice = append(TableSlice, &blockChainIdentity)
 }
