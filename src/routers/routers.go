@@ -1,6 +1,9 @@
 package routers
 
-import "github.com/gin-gonic/gin"
+import (
+	"starnet-demo/src/handlers"
+	"starnet-demo/src/services"
+)
 
 const ROUTERS_HEADER = "/satellitebc"
 
@@ -10,8 +13,8 @@ const ROUTERS_CONTROL = ROUTERS_HEADER + "/control"
 
 const ROUTERS_EXEC = ROUTERS_HEADER + "/exec"
 
-func LoadUserRouter(e *gin.Engine) {
-	routerGroup := e.Group(ROUTERS_USER)
+func LoadUserRouter(s *services.Server) {
+	routerGroup := s.GetGinEngine().Group(ROUTERS_USER)
 	{
 		routerGroup.POST("/register")
 		routerGroup.POST("/login")
@@ -20,11 +23,11 @@ func LoadUserRouter(e *gin.Engine) {
 	}
 }
 
-func LoadControlRouter(e *gin.Engine) {
-	routerGroup := e.Group(ROUTERS_CONTROL)
+func LoadControlRouter(s *services.Server) {
+	routerGroup := s.GetGinEngine().Group(ROUTERS_CONTROL)
 	{
-		routerGroup.POST("/adddebris")
-		routerGroup.POST("/getdebrislist")
+		routerGroup.POST("/adddebris", handlers.AddDebris(s))
+		routerGroup.POST("/getdebrislist", handlers.GetDebrisList(s))
 		routerGroup.POST("/getdebrishistory")
 
 		routerGroup.POST("/addinstruction")
@@ -49,8 +52,8 @@ func LoadControlRouter(e *gin.Engine) {
 	}
 }
 
-func LoadExecRouter(e *gin.Engine) {
-	routerGroup := e.Group(ROUTERS_EXEC)
+func LoadExecRouter(s *services.Server) {
+	routerGroup := s.GetGinEngine().Group(ROUTERS_EXEC)
 	{
 		routerGroup.POST("/adddebris")
 		routerGroup.POST("/getdebrislist")

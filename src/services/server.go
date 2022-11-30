@@ -2,8 +2,6 @@ package services
 
 import (
 	"starnet-demo/src/configs"
-	"starnet-demo/src/loggers"
-	"starnet-demo/src/routers"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -60,21 +58,18 @@ func NewServer(opts ...Option) (*Server, error) {
 	return server, nil
 }
 
-func (s *Server) Start() error {
-	//loading middleware
-	s.ginEngine.Use(loggers.GinLogger(s.log), loggers.GinRecovery(s.log, true))
+func (s *Server) GetGinEngine() *gin.Engine {
+	return s.ginEngine
+}
 
-	//loading route
-	routers.LoadUserRouter(s.ginEngine)
+func (s *Server) GetSeverPort() string {
+	return s.config.ServerPort
+}
 
-	routers.LoadControlRouter(s.ginEngine)
+func (s *Server) GetLogger() *zap.Logger {
+	return s.log
+}
 
-	routers.LoadExecRouter(s.ginEngine)
-
-	err := s.ginEngine.Run(s.config.ServerPort)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (s *Server) GetSuLogger() *zap.SugaredLogger {
+	return s.sulog
 }

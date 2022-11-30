@@ -32,7 +32,7 @@ type Satellite struct {
 	GeneralField
 	BlockChainField
 	SatelliteId   string `gorm:"uniqueIndex"`
-	SatelliteName string
+	SatelliteName string `gorm:"index"`
 	OrbitId       string
 	MeanAnomaly   float64
 	Speed         float64

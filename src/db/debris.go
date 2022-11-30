@@ -24,7 +24,7 @@ type Debris struct {
 	GeneralField
 	BlockChainField
 	DebrisId   string `gorm:"uniqueIndex"`
-	DebrisName string
+	DebrisName string `gorm:"index"`
 	Angle      float64
 	Speed      float64
 	Height     float64

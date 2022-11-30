@@ -3,7 +3,9 @@ package main
 import (
 	"starnet-demo/src/configs"
 	"starnet-demo/src/db"
+	"starnet-demo/src/handlers"
 	"starnet-demo/src/loggers"
+	"starnet-demo/src/routers"
 	"starnet-demo/src/services"
 )
 
@@ -32,9 +34,30 @@ func main() {
 		panic(err)
 	}
 
-	err = server.Start()
+	err = Start(server)
 	if err != nil {
 		panic(err)
 	}
 
+}
+
+func Start(s *services.Server) error {
+	//loading middleware
+	s.GetGinEngine().Use(handlers.Cors())
+	s.GetGinEngine().Use(loggers.GinLogger(s.GetLogger()))
+	//s.GetGinEngine().Use(loggers.GinRecovery(s.GetLogger(), true))
+
+	//loading route
+	routers.LoadUserRouter(s)
+
+	routers.LoadControlRouter(s)
+
+	routers.LoadExecRouter(s)
+
+	err := s.GetGinEngine().Run(":" + s.GetSeverPort())
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -5,7 +5,7 @@ const LOGINLOG_TABLE_NAME = "login_log"
 type LoginLog struct {
 	GeneralField
 	BlockChainField
-	UserName  string
+	UserName  string `gorm:"index"`
 	LoginTime int64
 	LoginIp   string
 }

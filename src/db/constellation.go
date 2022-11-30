@@ -6,7 +6,7 @@ type Constellation struct {
 	GeneralField
 	BlockChainField
 	ConstellationId    string `gorm:"uniqueIndex"`
-	ConstellationName  string
+	ConstellationName  string `gorm:"index"`
 	SatelliteTotalNum  int32
 	SatelliteUpNum     int32
 	SatelliteDownNum   int32

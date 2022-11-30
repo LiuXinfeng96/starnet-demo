@@ -32,7 +32,7 @@ var UserRoleTypeValue = map[string]UserRoleType{
 
 type User struct {
 	GeneralField
-	UserName     string
+	UserName     string `gorm:"index"`
 	UserRole     UserRoleType
 	UserPwd      string
 	UserNickName string

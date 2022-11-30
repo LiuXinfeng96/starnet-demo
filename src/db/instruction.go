@@ -69,8 +69,8 @@ type Instruction struct {
 	ExecInstructionTime int64
 	GenInstructionTime  int64
 	DebrisId            string
-	SatelliteId         string
-	SatelliteName       string
+	SatelliteId         string `gorm:"index"`
+	SatelliteName       string `gorm:"index"`
 	ExecState           InstructionExecState
 }
 

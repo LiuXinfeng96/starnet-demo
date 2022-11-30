@@ -5,8 +5,8 @@ const FAULT_TABLE_NAME = "fault"
 type Fault struct {
 	GeneralField
 	BlockChainField
-	SatelliteId      string
-	SatelliteName    string
+	SatelliteId      string `gorm:"index"`
+	SatelliteName    string `gorm:"index"`
 	OrbitId          string
 	FaultType        string
 	FaultTime        int64

@@ -5,11 +5,11 @@ const OPERATION_TABLE_NAME = "operation"
 type Operation struct {
 	GeneralField
 	BlockChainField
-	Operator        string
+	Operator        string `gorm:"index"`
 	IsAutomatic     bool
 	OperationTime   int64
 	OperationRecord string `gorm:"type:longtext"`
-	SatelliteId     string
+	SatelliteId     string `gorm:"index"`
 	SatelliteName   string
 }
 

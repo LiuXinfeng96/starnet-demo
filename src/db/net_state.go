@@ -5,8 +5,8 @@ const NETSTATE_TABLE_NAME = "net_state"
 type NetState struct {
 	GeneralField
 	BlockChainField
-	SatelliteId      string
-	SatelliteName    string
+	SatelliteId      string `gorm:"index"`
+	SatelliteName    string `gorm:"index"`
 	OrbitId          string
 	NetworkSegment   string
 	NetworkState     string

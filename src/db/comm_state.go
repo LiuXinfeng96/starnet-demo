@@ -5,8 +5,8 @@ const COMMSTATE_TABLE_NAME = "comm_state"
 type CommState struct {
 	GeneralField
 	BlockChainField
-	SatelliteId   string
-	SatelliteName string
+	SatelliteId   string `gorm:"index"`
+	SatelliteName string `gorm:"index"`
 	OrbitId       string
 	CommState     string
 	CommBandwidth string

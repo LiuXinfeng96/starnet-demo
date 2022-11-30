@@ -5,8 +5,8 @@ const CONTROL_TABLE_NAME = "control"
 type Control struct {
 	GeneralField
 	BlockChainField
-	SatelliteId          string
-	SatelliteName        string
+	SatelliteId          string `gorm:"index"`
+	SatelliteName        string `gorm:"index"`
 	SatelliteAttitude    string
 	SatelliteTemperature float64
 	SatellitePower       string
