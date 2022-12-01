@@ -11,8 +11,28 @@ import (
 
 func AddDebris(s *services.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
+
+		if err := checkTheAccessPermission(c, db.CONTROL); err != nil {
+			WithoutPermissionJSONResp(err.Error(), c)
+			return
+		}
+
 		var addDebirsReq models.AddDebirsReq
 		if err := c.ShouldBindBodyWith(&addDebirsReq, binding.JSON); err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		err := isStringRequiredParamsEmpty(addDebirsReq.DebrisId,
+			addDebirsReq.DebrisName, addDebirsReq.Type)
+		if err != nil {
+			ParamsMissingJSONResp(err.Error(), c)
+			return
+		}
+
+		debrisType, ok := db.DebrisTypeValue[addDebirsReq.Type]
+		if !ok {
+			ParamsValueJSONResp("debirs type not as expected", c)
 			return
 		}
 		debirs := &db.Debris{
@@ -22,11 +42,12 @@ func AddDebris(s *services.Server) gin.HandlerFunc {
 			Speed:      addDebirsReq.Speed,
 			Height:     addDebirsReq.Height,
 			Volunme:    addDebirsReq.Volume,
-			Type:       db.LARGE,
+			Type:       debrisType,
 		}
 
-		err := s.InsertOneObjertToDB(debirs)
+		err = s.InsertOneObjertToDB(debirs)
 		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
 			return
 		}
 
@@ -38,19 +59,34 @@ func GetDebrisList(s *services.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req models.QueryListReq
 		if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
 			return
+		}
+
+		err := isIntRequiredParamsEmpty(int(req.Page),
+			int(req.PageSize))
+		if err != nil {
+			ParamsMissingJSONResp(err.Error(), c)
+			return
+		}
+
+		sortType, ok := services.SortTypeValue[req.SortType]
+		if !ok {
+			sortType = services.SORTTYPE_TIME
 		}
 
 		params := &services.QueryObjectsParams{
 			ModelStruct: new(db.Debris),
 			Page:        req.Page,
 			PageSize:    req.PageSize,
-			SortType:    services.SORTTYPE_TIME_STR,
+			SortType:    sortType,
 			SearchInput: req.SearchConditions,
 		}
 
-		params.SearchIndex = append(params.SearchIndex, "debris_id")
-		params.SearchIndex = append(params.SearchIndex, "debris_name")
+		if len(req.SearchConditions) != 0 {
+			params.SearchIndex = append(params.SearchIndex, "debris_id")
+			params.SearchIndex = append(params.SearchIndex, "debris_name")
+		}
 
 		sqlRows, err := s.QueryObjectsWithPage(params)
 		if err != nil {
@@ -65,7 +101,8 @@ func GetDebrisList(s *services.Server) gin.HandlerFunc {
 			var debris db.Debris
 			err := s.ScanRows(sqlRows, &debris)
 			if err != nil {
-				ServerErrorJSONResp(c)
+				ServerErrorJSONResp(err.Error(), c)
+				return
 			}
 
 			resp = append(resp, &models.DebrisInfo{

@@ -48,6 +48,10 @@ func Start(s *services.Server) error {
 	//s.GetGinEngine().Use(loggers.GinRecovery(s.GetLogger(), true))
 
 	//loading route
+	routers.LoadNoTokenRouter(s)
+
+	s.GetGinEngine().Use(handlers.JWTAuthMiddleware(s))
+
 	routers.LoadUserRouter(s)
 
 	routers.LoadControlRouter(s)

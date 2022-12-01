@@ -13,11 +13,17 @@ const ROUTERS_CONTROL = ROUTERS_HEADER + "/control"
 
 const ROUTERS_EXEC = ROUTERS_HEADER + "/exec"
 
-func LoadUserRouter(s *services.Server) {
+func LoadNoTokenRouter(s *services.Server) {
 	routerGroup := s.GetGinEngine().Group(ROUTERS_USER)
 	{
 		routerGroup.POST("/register")
 		routerGroup.POST("/login")
+	}
+}
+
+func LoadUserRouter(s *services.Server) {
+	routerGroup := s.GetGinEngine().Group(ROUTERS_USER)
+	{
 		routerGroup.POST("/logout")
 		routerGroup.POST("/getuserinfo")
 	}

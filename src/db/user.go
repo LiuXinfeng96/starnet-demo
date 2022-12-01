@@ -5,29 +5,34 @@ const USER_TABLE_NAME = "user"
 type UserRoleType int32
 
 const (
-	ADMIN UserRoleType = iota + 1
-	COMMON
-	RESTRICTED
+	CONTROL UserRoleType = iota + 1
+	EXEC
+	TRACE
+	MONITOR
 )
 
 const (
-	ADMIN_STR = "管理员"
+	CONTROL_STR = "控制系统"
 
-	COMMON_STR = "操作员"
+	EXEC_STR = "执行系统"
 
-	RESTRICTED_STR = "访客"
+	TRACE_STR = "溯源系统"
+
+	MONITOR_STR = "监控系统"
 )
 
 var UserRoleTypeName = map[UserRoleType]string{
-	ADMIN:      ADMIN_STR,
-	COMMON:     COMMON_STR,
-	RESTRICTED: RESTRICTED_STR,
+	CONTROL: CONTROL_STR,
+	EXEC:    EXEC_STR,
+	TRACE:   TRACE_STR,
+	MONITOR: MONITOR_STR,
 }
 
 var UserRoleTypeValue = map[string]UserRoleType{
-	ADMIN_STR:      ADMIN,
-	COMMON_STR:     COMMON,
-	RESTRICTED_STR: RESTRICTED,
+	CONTROL_STR: CONTROL,
+	EXEC_STR:    EXEC,
+	TRACE_STR:   TRACE,
+	MONITOR_STR: MONITOR,
 }
 
 type User struct {

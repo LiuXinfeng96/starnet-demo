@@ -29,7 +29,7 @@ type QueryObjectsParams struct {
 	ModelStruct interface{}
 	Page        int32
 	PageSize    int32
-	SortType    string
+	SortType    SortType
 	SearchIndex []string
 	SearchInput string
 }
@@ -54,11 +54,11 @@ func (s *Server) InsertObjectsToDB(objects []interface{}) error {
 
 func (s *Server) QueryObjectsWithPage(params *QueryObjectsParams) (*sql.Rows, error) {
 	switch params.SortType {
-	case SORTTYPE_TIME_STR:
+	case SORTTYPE_TIME:
 		offset := (params.Page - 1) * params.PageSize
 
-		querySub := s.gormDb.Model(params.ModelStruct).Select("last_time").
-			Order("last_time desc").Limit(1).Offset(int(offset))
+		querySub := s.gormDb.Model(params.ModelStruct).Select("id").
+			Order("last_time desc").Limit(int(params.PageSize)).Offset(int(offset))
 
 		if len(params.SearchIndex) != 0 && len(params.SearchInput) != 0 {
 			for i, v := range params.SearchIndex {
@@ -70,8 +70,7 @@ func (s *Server) QueryObjectsWithPage(params *QueryObjectsParams) (*sql.Rows, er
 			}
 		}
 
-		return s.gormDb.Model(params.ModelStruct).Where("last_time <= (?)", querySub).
-			Order("last_time desc").Limit(int(params.PageSize)).Rows()
+		return s.gormDb.Model(params.ModelStruct).Joins("inner join (?) as t2 using(id)", querySub).Rows()
 	default:
 		err := errors.New("the sort type does not exist")
 		s.sulog.Infof("query objects with page from db failed, err:[%s]",
