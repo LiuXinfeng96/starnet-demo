@@ -16,6 +16,12 @@ const (
 
 	RESP_CODE_SERVER_ERROR = 500
 
+	RESP_CODE_UNIQUE_INDEX = 501
+
+	RESP_CODE_NOT_EXIST = 502
+
+	RESP_CODE_PWD_ERROR = 503
+
 	RESP_CODE_PARAMS_TYPE_ERROR = 101
 
 	RESP_CODE_PARAMS_MISSING = 102
@@ -39,6 +45,12 @@ const (
 	RESP_MSG_PARAMS_VALUE_ERROR = "参数值域不符合预期"
 
 	RESP_MSG_WITHOUT_PERMISSION = "无权限访问"
+
+	RESP_MSG_UNIQUE_INDEX = "唯一索引已经存在"
+
+	RESP_MSG_NOT_EXIST = "唯一索引不存在"
+
+	RESP_MSG_PWD_ERROR = "密码错误"
 )
 
 type UserInfo struct {
@@ -48,13 +60,13 @@ type UserInfo struct {
 	UserRole     string `json:"userRole"`
 	UserPhoneNum string `json:"userPhoneNum"`
 	UserEmail    string `json:"userEmail"`
-	Expires      int32  `json:"expires"`
+	Expires      int64  `json:"expires"`
 }
 
 type LoginInfo struct {
 	UserNickName string `json:"userNickName"`
 	UserRole     string `json:"userRole"`
-	Expires      int32  `json:"expires"`
+	Expires      int64  `json:"expires"`
 	Token        string `json:"token"`
 }
 

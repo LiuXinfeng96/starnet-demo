@@ -106,6 +106,33 @@ func WithoutPermissionJSONResp(err string, c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+func UniqueIndexJSONResp(err string, c *gin.Context) {
+	resp := models.StandardResp{
+		Code: models.RESP_CODE_UNIQUE_INDEX,
+		Msg:  models.RESP_MSG_UNIQUE_INDEX,
+		Data: err,
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+func NotExistJSONResp(err string, c *gin.Context) {
+	resp := models.StandardResp{
+		Code: models.RESP_CODE_NOT_EXIST,
+		Msg:  models.RESP_MSG_NOT_EXIST,
+		Data: err,
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+func PwdErrorJSONResp(err string, c *gin.Context) {
+	resp := models.StandardResp{
+		Code: models.RESP_CODE_PWD_ERROR,
+		Msg:  models.RESP_MSG_PWD_ERROR,
+		Data: err,
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
 func isStringRequiredParamsEmpty(params ...string) error {
 	for _, p := range params {
 		if len(p) == 0 {
@@ -152,7 +179,7 @@ func checkTheAccessPermission(c *gin.Context, dbRole db.UserRoleType) error {
 		return errors.New("token type error")
 	}
 
-	roleType, ok := db.UserRoleTypeValue[services.GetRoleFromToken(tokenClaims)]
+	roleType, ok := db.UserRoleTypeValue[tokenClaims.GetRoleFromToken()]
 
 	if !ok {
 		return errors.New("the user role not found")

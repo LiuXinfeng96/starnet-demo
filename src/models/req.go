@@ -1,26 +1,27 @@
 package models
 
-type TokenReq struct {
-	Token string `json:"token"`
-}
-type PageReq struct {
-	PageSize int32 `json:"pageSize"`
-	Page     int32 `json:"page"`
-}
+// type TokenReq struct {
+// 	Token string `json:"token"`
+// }
+// type PageReq struct {
+// 	PageSize int32 `json:"pageSize"`
+// 	Page     int32 `json:"page"`
+// }
 
-type QueryReq struct {
-	SortType         string `json:"sortType"`
-	SearchConditions string `json:"searchConditions"`
-}
+// type QueryReq struct {
+// 	SortType         string `json:"sortType"`
+// 	SearchConditions string `json:"searchConditions"`
+// }
 
-type QueryListReq struct {
-	QueryReq
-	PageReq
-}
+// type QueryListReq struct {
+// 	QueryReq
+// 	PageReq
+// }
 
 type RegisterReq struct {
 	UserName     string `json:"userName"`
 	UserPwd      string `json:"userPwd"`
+	UserRole     string `json:"userRole"`
 	UserNickName string `json:"userNickName"`
 	UserPhoneNum string `json:"userPhoneNum"`
 	UserEmail    string `json:"userEmail"`
@@ -29,10 +30,6 @@ type RegisterReq struct {
 type LoginReq struct {
 	UserName string `json:"userName"`
 	UserPwd  string `json:"userPwd"`
-}
-
-type UserReq struct {
-	UserName string `json:"userName"`
 }
 
 type AddDebirsReq struct {
@@ -45,10 +42,6 @@ type AddDebirsReq struct {
 	Type       string  `json:"type"`
 }
 
-type GetDebrisReq struct {
-	DebrisId string `json:"debrisId"`
-}
-
 type AddInstructionReq struct {
 	InstructtionId      string `json:"instructtionId"`
 	ExecInstructionTime int64  `json:"execInstructionTime"`
@@ -57,14 +50,6 @@ type AddInstructionReq struct {
 	SatelliteId         string `json:"satelliteId"`
 	SatelliteName       string `json:"satelliteName"`
 	InstructionContent  string `json:"instructionContent"`
-}
-
-type GetInstructionReq struct {
-	InstructionId string `json:"instructionId"`
-}
-
-type GetInstructionResultReq struct {
-	Id int32 `json:"id"`
 }
 
 type AddOrbitReq struct {
@@ -86,14 +71,6 @@ type AddConstellationReq struct {
 	SatelliteLinkState string `json:"satelliteLinkState"`
 }
 
-type GetConstellationReq struct {
-	ConstellationId string `json:"constellationId"`
-}
-
-type GetOperationReq struct {
-	SatelliteId string `json:"satelliteId"`
-}
-
 type AddSatelliteState struct {
 	SatelliteId   string  `json:"satelliteId"`
 	SatelliteName string  `json:"satelliteName"`
@@ -103,20 +80,12 @@ type AddSatelliteState struct {
 	RunState      string  `json:"runState"`
 }
 
-type GetSatelliteStateReq struct {
-	ConstellationId string `json:"constellationId"`
-}
-
 type AddControlsReq struct {
 	SatelliteId          string  `json:"satelliteId"`
 	SatelliteName        string  `json:"satelliteName"`
 	SatelliteAttitude    string  `json:"satelliteAttitude"`
 	SatelliteTemperature float64 `json:"satelliteTemperature"`
 	SatellitePower       float64 `json:"satellitePower"`
-}
-
-type GetControlsReq struct {
-	SatelliteId string `json:"satelliteId"`
 }
 
 type AddFaultReq struct {
@@ -129,10 +98,6 @@ type AddFaultReq struct {
 	RepairState      string `json:"repairState"`
 }
 
-type GetFaultReq struct {
-	SatelliteId string `json:"satelliteId"`
-}
-
 type AddNetStateReq struct {
 	SatelliteId      string  `json:"satelliteId"`
 	SatelliteName    string  `json:"satelliteName"`
@@ -140,10 +105,6 @@ type AddNetStateReq struct {
 	NetworkSegment   string  `json:"networkSegment"`
 	NetworkState     string  `json:"networkState"`
 	NetworkBandwidth float32 `json:"networkBandwidth"`
-}
-
-type GetNetStateReq struct {
-	SatelliteId string `json:"satelliteId"`
 }
 
 type AddCommStateReq struct {
@@ -155,8 +116,4 @@ type AddCommStateReq struct {
 	CommBandwidth string `json:"commBandwidth"`
 	CommDelay     string `json:"commDelay"`
 	LinkLoad      string `json:"linkLoad"`
-}
-
-type GetCommStateReq struct {
-	SatelliteId string `json:"satelliteId"`
 }

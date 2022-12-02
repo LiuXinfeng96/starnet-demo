@@ -2,8 +2,9 @@ package services
 
 import (
 	"errors"
+	"starnet-demo/src/db"
+	"starnet-demo/src/models"
 	"strconv"
-	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -45,28 +46,41 @@ func (s *Server) ParseToken(token string) (*Claims, error) {
 	return nil, errors.New("invalid token")
 }
 
-func (s *Server) GenToken(id int32,
-	name, role, nickName, phoneNum, email string) (string, error) {
-	if len(phoneNum) == 0 {
-		phoneNum = strconv.Itoa(int(id)) + name
+func (s *Server) GenToken(user *db.User, expiresAt int64) (string, error) {
+
+	phoneNum := user.UserPhoneNum
+	if len(user.UserPhoneNum) == 0 {
+		phoneNum = strconv.Itoa(int(user.Id)) + user.UserName
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodES256,
 		Claims{
-			id:       id,
-			name:     name,
-			role:     role,
-			nickName: nickName,
+			id:       user.Id,
+			name:     user.UserName,
+			role:     db.UserRoleTypeName[user.UserRole],
+			nickName: user.UserNickName,
 			phoneNum: phoneNum,
-			email:    email,
+			email:    user.UserEmail,
 			StandardClaims: jwt.StandardClaims{
-				ExpiresAt: time.Now().Add(time.Second * time.Duration(7200)).Unix(),
+				ExpiresAt: expiresAt,
 			},
 		})
 
 	return token.SignedString([]byte(phoneNum))
 }
 
-func GetRoleFromToken(c *Claims) string {
+func (c *Claims) GetRoleFromToken() string {
 	return c.role
+}
+
+func (c *Claims) GetUserInfo() *models.UserInfo {
+	return &models.UserInfo{
+		Id:           c.id,
+		UserName:     c.name,
+		UserRole:     c.role,
+		UserNickName: c.nickName,
+		UserPhoneNum: c.phoneNum,
+		UserEmail:    c.email,
+		Expires:      c.ExpiresAt,
+	}
 }

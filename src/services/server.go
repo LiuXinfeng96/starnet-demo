@@ -9,11 +9,12 @@ import (
 )
 
 type Server struct {
-	ginEngine *gin.Engine
-	config    *configs.Config
-	log       *zap.Logger
-	sulog     *zap.SugaredLogger
-	gormDb    *gorm.DB
+	ginEngine        *gin.Engine
+	config           *configs.Config
+	log              *zap.Logger
+	sulog            *zap.SugaredLogger
+	gormDb           *gorm.DB
+	satelliteChainId string
 }
 
 type Option func(s *Server)
