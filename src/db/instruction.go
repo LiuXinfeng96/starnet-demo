@@ -62,13 +62,14 @@ var ExecStateValue = map[string]InstructionExecState{
 type Instruction struct {
 	GeneralField
 	BlockChainField
-	InstructionId       string `gorm:"uniqueIndex"`
+	InstructionId       string `gorm:"index"`
 	Type                InstructionType
 	InstructionContent  string
 	InstructionSource   string
 	ExecInstructionTime int64
 	GenInstructionTime  int64
 	DebrisId            string
+	DebrisName          string
 	SatelliteId         string `gorm:"index"`
 	SatelliteName       string `gorm:"index"`
 	ExecState           InstructionExecState

@@ -11,6 +11,7 @@ type CommState struct {
 	CommState     string
 	CommBandwidth string
 	CommDelay     string
+	CommPort      string
 	LinkLoad      string
 }
 

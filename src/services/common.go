@@ -36,7 +36,7 @@ type QueryObjectsParams struct {
 
 func (s *Server) InsertOneObjertToDB(object interface{}) error {
 	if err := s.gormDb.Create(object).Error; err != nil {
-		s.sulog.Infof("insert one object to db failed, err:[%s], object: [%+v]",
+		s.sulog.Infof("insert one object to db failed, err:[%s], object: [%+v]\n",
 			err.Error(), object)
 		return err
 	}
@@ -45,7 +45,7 @@ func (s *Server) InsertOneObjertToDB(object interface{}) error {
 
 func (s *Server) InsertObjectsToDB(objects []interface{}) error {
 	if err := s.gormDb.CreateInBatches(objects, DEFAULT_BATCHES_SIZE).Error; err != nil {
-		s.sulog.Infof("insert objects to db failed, err:[%s]",
+		s.sulog.Infof("insert objects to db failed, err:[%s]\n",
 			err.Error())
 		return err
 	}
@@ -73,7 +73,7 @@ func (s *Server) QueryObjectsWithPage(params *QueryObjectsParams) (*sql.Rows, er
 		return s.gormDb.Model(params.ModelStruct).Joins("inner join (?) as t2 using(id)", querySub).Rows()
 	default:
 		err := errors.New("the sort type does not exist")
-		s.sulog.Infof("query objects with page from db failed, err:[%s]",
+		s.sulog.Infof("query objects with page from db failed, err:[%s]\n",
 			err.Error())
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (s *Server) QueryObjectsWithPageSC(params *QueryObjectsParams) (*sql.Rows, 
 		return s.gormDb.Model(params.ModelStruct).Joins("inner join (?) as t2 using(id)", querySub).Rows()
 	default:
 		err := errors.New("the sort type does not exist")
-		s.sulog.Infof("query objects with page from db failed, err:[%s]",
+		s.sulog.Infof("query objects with page from db failed, err:[%s]\n",
 			err.Error())
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (s *Server) QueryObjectsWithPageSC(params *QueryObjectsParams) (*sql.Rows, 
 func (s *Server) ScanRows(rows *sql.Rows, object interface{}) error {
 	err := s.gormDb.ScanRows(rows, object)
 	if err != nil {
-		s.sulog.Infof("scan sql rows failed, err:[%s]",
+		s.sulog.Infof("scan sql rows failed, err:[%s]\n",
 			err.Error())
 		return err
 	}
@@ -123,7 +123,7 @@ func (s *Server) QueryObjectById(modelStruct interface{},
 	if err := s.gormDb.Model(modelStruct).
 		Where("id = ?", id).First(modelStruct).Error; err != nil {
 
-		s.sulog.Infof("query object by id failed, err:[%s], object:[%+v]",
+		s.sulog.Infof("query object by id failed, err:[%s], object:[%+v]\n",
 			err.Error(), modelStruct)
 		return err
 	}
@@ -136,7 +136,7 @@ func (s *Server) QueryObjectByCondition(modelStruct interface{},
 	if err := s.gormDb.Model(modelStruct).
 		Where(searchIndex+" = ?", searchInput).First(modelStruct).Error; err != nil {
 
-		s.sulog.Infof("query object by [%s] failed, err:[%s], object:[%+v]",
+		s.sulog.Infof("query object by [%s] failed, err:[%s], object:[%+v]\n",
 			searchIndex, err.Error(), modelStruct)
 		return err
 	}
@@ -151,7 +151,7 @@ func (s *Server) QueryObjectsByCondition(modelStruct interface{},
 		Order("last_time desc").Rows()
 
 	if err != nil {
-		s.sulog.Infof("query objects by [%s] failed, err:[%s], object:[%+v]",
+		s.sulog.Infof("query objects by [%s] failed, err:[%s], object:[%+v]\n",
 			searchIndex, err.Error(), modelStruct)
 		return nil, err
 	}

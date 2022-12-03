@@ -192,7 +192,7 @@ type ControlsInfo struct {
 	SatelliteName        string  `json:"satelliteName"`
 	SatelliteAttitude    string  `json:"satelliteAttitude"`
 	SatelliteTemperature float64 `json:"satelliteTemperature"`
-	SatellitePower       float64 `json:"satellitePower"`
+	SatellitePower       string  `json:"satellitePower"`
 }
 
 type ControlsHistoryInfo struct {
@@ -218,12 +218,12 @@ type FaultHistoryInfo struct {
 
 type NetStateInfo struct {
 	BaseRespInfo
-	SatelliteId      string  `json:"satelliteId"`
-	SatelliteName    string  `json:"satelliteName"`
-	OrbitId          string  `json:"orbitId"`
-	NetworkSegment   string  `json:"networkSegment"`
-	NetworkState     string  `json:"networkState"`
-	NetworkBandwidth float32 `json:"networkBandwidth"`
+	SatelliteId      string `json:"satelliteId"`
+	SatelliteName    string `json:"satelliteName"`
+	OrbitId          string `json:"orbitId"`
+	NetworkSegment   string `json:"networkSegment"`
+	NetworkState     string `json:"networkState"`
+	NetworkBandwidth string `json:"networkBandwidth"`
 }
 
 type NetStateHistoryInfo struct {
@@ -231,7 +231,7 @@ type NetStateHistoryInfo struct {
 	HistoryRespInfo
 }
 
-type CommstateInfo struct {
+type CommStateInfo struct {
 	BaseRespInfo
 	SatelliteId   string `json:"satelliteId"`
 	SatelliteName string `json:"satelliteName"`
@@ -243,7 +243,7 @@ type CommstateInfo struct {
 	LinkLoad      string `json:"linkLoad"`
 }
 
-type CommstateHistoryInfo struct {
-	CommstateInfo
+type CommStateHistoryInfo struct {
+	CommStateInfo
 	HistoryRespInfo
 }

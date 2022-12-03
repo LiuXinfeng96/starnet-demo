@@ -43,13 +43,12 @@ type AddDebirsReq struct {
 }
 
 type AddInstructionReq struct {
-	InstructtionId      string `json:"instructtionId"`
-	ExecInstructionTime int64  `json:"execInstructionTime"`
-	DebrisId            string `json:"debrisId"`
-	DebrisName          string `json:"debrisName"`
-	SatelliteId         string `json:"satelliteId"`
-	SatelliteName       string `json:"satelliteName"`
-	InstructionContent  string `json:"instructionContent"`
+	InstructtionId     string `json:"instructtionId"`
+	DebrisId           string `json:"debrisId"`
+	DebrisName         string `json:"debrisName"`
+	SatelliteId        string `json:"satelliteId"`
+	SatelliteName      string `json:"satelliteName"`
+	InstructionContent string `json:"instructionContent"`
 }
 
 type AddOrbitReq struct {
@@ -85,7 +84,7 @@ type AddControlsReq struct {
 	SatelliteName        string  `json:"satelliteName"`
 	SatelliteAttitude    string  `json:"satelliteAttitude"`
 	SatelliteTemperature float64 `json:"satelliteTemperature"`
-	SatellitePower       float64 `json:"satellitePower"`
+	SatellitePower       string  `json:"satellitePower"`
 }
 
 type AddFaultReq struct {
@@ -99,12 +98,12 @@ type AddFaultReq struct {
 }
 
 type AddNetStateReq struct {
-	SatelliteId      string  `json:"satelliteId"`
-	SatelliteName    string  `json:"satelliteName"`
-	OrbitId          string  `json:"orbitId"`
-	NetworkSegment   string  `json:"networkSegment"`
-	NetworkState     string  `json:"networkState"`
-	NetworkBandwidth float32 `json:"networkBandwidth"`
+	SatelliteId      string `json:"satelliteId"`
+	SatelliteName    string `json:"satelliteName"`
+	OrbitId          string `json:"orbitId"`
+	NetworkSegment   string `json:"networkSegment"`
+	NetworkState     string `json:"networkState"`
+	NetworkBandwidth string `json:"networkBandwidth"`
 }
 
 type AddCommStateReq struct {

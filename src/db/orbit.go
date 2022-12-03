@@ -5,7 +5,7 @@ const ORBIT_TABLE_NAME = "orbit"
 type Orbit struct {
 	GeneralField
 	BlockChainField
-	OrbitId                string `gorm:"uniqueIndex"`
+	OrbitId                string `gorm:"index"`
 	OrbitType              string
 	OrbitSemiMajorAxis     float64
 	OrbitEccentricity      float64

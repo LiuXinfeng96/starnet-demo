@@ -31,7 +31,7 @@ var SatelliteRunStateValue = map[string]SatelliteRunState{
 type Satellite struct {
 	GeneralField
 	BlockChainField
-	SatelliteId   string `gorm:"uniqueIndex"`
+	SatelliteId   string `gorm:"index"`
 	SatelliteName string `gorm:"index"`
 	OrbitId       string
 	MeanAnomaly   float64

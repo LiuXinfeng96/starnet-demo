@@ -52,6 +52,7 @@ func WithGormDb(db *gorm.DB) Option {
 
 func NewServer(opts ...Option) (*Server, error) {
 	server := new(Server)
+	server.satelliteChainId = "testchain"
 	for _, opt := range opts {
 		opt(server)
 	}

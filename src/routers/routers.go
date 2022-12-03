@@ -28,7 +28,7 @@ func LoadNoTokenRouter(s *services.Server) {
 func LoadUserRouter(s *services.Server) {
 	routerGroup := s.GetGinEngine().Group(ROUTERS_USER)
 	{
-		routerGroup.POST("/getuserinfo", handlers.GetUserInfo(s))
+		routerGroup.GET("/getuserinfo", handlers.GetUserInfo(s))
 	}
 }
 
@@ -36,23 +36,23 @@ func LoadControlRouter(s *services.Server) {
 	routerGroup := s.GetGinEngine().Group(ROUTERS_CONTROL)
 	{
 		routerGroup.POST("/adddebris", handlers.ControlAddDebris(s))
-		routerGroup.POST("/getdebrislist", handlers.ControlGetDebrisList(s))
+		routerGroup.GET("/getdebrislist", handlers.ControlGetDebrisList(s))
 
-		routerGroup.POST("/addinstruction")
-		routerGroup.POST("/getinstructionlist")
+		routerGroup.POST("/addinstruction", handlers.ControlAddInstruction(s))
+		routerGroup.GET("/getinstructionlist", handlers.ControlGetInstructionList(s))
 
-		routerGroup.POST("/getexecresultlist")
-		routerGroup.POST("/getexecresult")
+		routerGroup.POST("/getexecresultlist", handlers.ControlGetExecResultList(s))
+		routerGroup.GET("/getexecresult", handlers.ControlGetExecResult(s))
 
-		routerGroup.POST("/addorbit")
-		routerGroup.POST("/getorbitlist")
+		routerGroup.POST("/addorbit", handlers.ControlAddOrbit(s))
+		routerGroup.GET("/getorbitlist", handlers.ControlGetOrbitList(s))
 
-		routerGroup.POST("/addconstellation")
-		routerGroup.POST("/getconstellationlist")
+		routerGroup.POST("/addconstellation", handlers.ControlAddConstellation(s))
+		routerGroup.GET("/getconstellationlist", handlers.ControlGetConstellationList(s))
 
-		routerGroup.POST("/getoperationlist")
+		routerGroup.GET("/getoperationlist", handlers.ControlGetOperationList(s))
 
-		routerGroup.POST("/getloginloglist")
+		routerGroup.GET("/getloginloglist", handlers.ControlGetLoginLogList(s))
 
 	}
 }
@@ -60,31 +60,31 @@ func LoadControlRouter(s *services.Server) {
 func LoadExecRouter(s *services.Server) {
 	routerGroup := s.GetGinEngine().Group(ROUTERS_EXEC)
 	{
-		routerGroup.POST("/adddebris")
-		routerGroup.POST("/getdebrislist")
+		routerGroup.POST("/adddebris", handlers.ExecAddDebris(s))
+		routerGroup.GET("/getdebrislist", handlers.ExecGetDebrisList(s))
 
-		routerGroup.POST("/getinstructionlist")
-		routerGroup.POST("/getinstruction")
+		routerGroup.GET("/getinstructionlist", handlers.ExecGetInstructionList(s))
+		routerGroup.GET("/getinstruction", handlers.ExecGetInstruction(s))
 
-		routerGroup.POST("/getexecresultlist")
-		routerGroup.POST("/getexecresult")
+		routerGroup.GET("/getexecresultlist", handlers.ExecGetExecResultList(s))
+		routerGroup.GET("/getexecresult", handlers.ExecGetExecResult(s))
 
-		routerGroup.POST("/addsatellitestate")
-		routerGroup.POST("/getsatellitestatelist")
+		routerGroup.POST("/addsatellitestate", handlers.ExecAddSatelliteState(s))
+		routerGroup.GET("/getsatellitestatelist", handlers.ExecGetSatelliteStateList(s))
 
-		routerGroup.POST("/addcontrols")
-		routerGroup.POST("/getcontrolslist")
+		routerGroup.POST("/addcontrols", handlers.ExecAddControl(s))
+		routerGroup.GET("/getcontrolslist", handlers.ExecGetControlList(s))
 
-		routerGroup.POST("/addfault")
-		routerGroup.POST("/getfaultlist")
+		routerGroup.POST("/addfault", handlers.ExecAddFault(s))
+		routerGroup.GET("/getfaultlist", handlers.ExecGetFaultList(s))
 
-		routerGroup.POST("/addnetstate")
-		routerGroup.POST("/getnetstatelist")
+		routerGroup.POST("/addnetstate", handlers.ExecAddNetState(s))
+		routerGroup.GET("/getnetstatelist", handlers.ExecGetNetStateList(s))
 
-		routerGroup.POST("/addcommstate")
-		routerGroup.POST("/getcommstatelist")
+		routerGroup.POST("/addcommstate", handlers.ExecAddCommState(s))
+		routerGroup.GET("/getcommstatelist", handlers.ExecGetCommStateList(s))
 
-		routerGroup.POST("/getoperationlist")
+		routerGroup.GET("/getoperationlist", handlers.ExecGetOperationList(s))
 
 	}
 }
@@ -92,15 +92,15 @@ func LoadExecRouter(s *services.Server) {
 func LoadTraceRouter(s *services.Server) {
 	routerGroup := s.GetGinEngine().Group(ROUTERS_TRACE)
 	{
-		routerGroup.POST("/getdebrishistory")
-		routerGroup.POST("/getinstructionhistory")
-		routerGroup.POST("/getconstellationhistory")
-		routerGroup.POST("/getoperationhistory")
-		routerGroup.POST("/getsatellitestatehistory")
-		routerGroup.POST("/getcontrolshistory")
-		routerGroup.POST("/getfaulthistory")
-		routerGroup.POST("/getnetstatehistory")
-		routerGroup.POST("/getcommstatehistory")
+		routerGroup.GET("/getdebrishistory", handlers.TraceGetDebris(s))
+		routerGroup.GET("/getinstructionhistory", handlers.TraceGetInstruction(s))
+		routerGroup.GET("/getconstellationhistory", handlers.TraceGetConstellation(s))
+		routerGroup.GET("/getoperationhistory", handlers.TraceGetOperation(s))
+		routerGroup.GET("/getsatellitestatehistory", handlers.TraceGetSatelliteState(s))
+		routerGroup.GET("/getcontrolshistory", handlers.TraceGetControl(s))
+		routerGroup.GET("/getfaulthistory", handlers.TraceGetFault(s))
+		routerGroup.GET("/getnetstatehistory", handlers.TraceGetNetState(s))
+		routerGroup.GET("/getcommstatehistory", handlers.TraceGetCommetState(s))
 	}
 }
 

@@ -5,7 +5,7 @@ const CONSTELLATION_TABLE_NAME = "constellation"
 type Constellation struct {
 	GeneralField
 	BlockChainField
-	ConstellationId    string `gorm:"uniqueIndex"`
+	ConstellationId    string `gorm:"index"`
 	ConstellationName  string `gorm:"index"`
 	SatelliteTotalNum  int32
 	SatelliteUpNum     int32

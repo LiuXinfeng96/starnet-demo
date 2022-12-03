@@ -6,7 +6,7 @@ type Operation struct {
 	GeneralField
 	BlockChainField
 	Operator        string `gorm:"index"`
-	IsAutomatic     bool
+	OperatorIp      string
 	OperationTime   int64
 	OperationRecord string `gorm:"type:longtext"`
 	SatelliteId     string `gorm:"index"`

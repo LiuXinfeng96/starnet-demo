@@ -1,0 +1,207 @@
+package handlers
+
+import (
+	"starnet-demo/src/db"
+	"starnet-demo/src/models"
+	"starnet-demo/src/services"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
+
+func ExecAddCommState(s *services.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if err := checkTheAccessPermission(c, db.EXEC); err != nil {
+			WithoutPermissionJSONResp(err.Error(), c)
+			return
+		}
+
+		var req models.AddCommStateReq
+		if err := c.ShouldBindJSON(&req); err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		err := isStringRequiredParamsEmpty(req.SatelliteId, req.SatelliteName, req.LinkLoad,
+			req.OrbitId, req.CommState, req.CommPort, req.CommDelay, req.CommBandwidth)
+		if err != nil {
+			ParamsMissingJSONResp(err.Error(), c)
+			return
+		}
+
+		// 1. 通信信息上星座链
+		// 2. 入库
+
+		commState := &db.CommState{
+			SatelliteId:   req.SatelliteId,
+			SatelliteName: req.SatelliteName,
+			OrbitId:       req.OrbitId,
+			CommState:     req.CommState,
+			CommDelay:     req.CommDelay,
+			CommPort:      req.CommPort,
+			CommBandwidth: req.CommBandwidth,
+			LinkLoad:      req.LinkLoad,
+		}
+
+		err = s.InsertOneObjertToDB(commState)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		SuccessfulJSONResp("", c)
+	}
+}
+
+func ExecGetCommStateList(s *services.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		if err := checkTheAccessPermission(c, db.EXEC); err != nil {
+			WithoutPermissionJSONResp(err.Error(), c)
+			return
+		}
+
+		pageStr := c.Query("page")
+		pageSizeStr := c.Query("pageSize")
+		sortTypeStr := c.Query("sortType")
+		searchInput := c.Query("searchConditions")
+
+		err := isStringRequiredParamsEmpty(pageSizeStr, pageStr)
+		if err != nil {
+			ParamsMissingJSONResp(err.Error(), c)
+			return
+		}
+
+		page, err := strconv.Atoi(pageStr)
+		if err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		pageSize, err := strconv.Atoi(pageSizeStr)
+		if err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		sortType, ok := services.SortTypeValue[sortTypeStr]
+		if !ok {
+			sortType = services.SORTTYPE_TIME
+		}
+
+		params := &services.QueryObjectsParams{
+			ModelStruct: new(db.CommState),
+			Page:        int32(page),
+			PageSize:    int32(pageSize),
+			SortType:    sortType,
+			SearchInput: searchInput,
+			SearchIndex: make([]string, 0),
+		}
+
+		if len(searchInput) != 0 {
+			params.SearchIndex = append(params.SearchIndex, "satellite_id")
+			params.SearchIndex = append(params.SearchIndex, "satellite_name")
+		}
+
+		sqlRows, err := s.QueryObjectsWithPage(params)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		defer sqlRows.Close()
+
+		resp := make([]*models.CommStateInfo, 0)
+
+		for sqlRows.Next() {
+			var commState db.CommState
+			err := s.ScanRows(sqlRows, &commState)
+			if err != nil {
+				ServerErrorJSONResp(err.Error(), c)
+				return
+			}
+
+			resp = append(resp, &models.CommStateInfo{
+				SatelliteId:   commState.SatelliteId,
+				SatelliteName: commState.SatelliteName,
+				OrbitId:       commState.OrbitId,
+				CommState:     commState.CommState,
+				CommPort:      commState.CommPort,
+				CommDelay:     commState.CommDelay,
+				CommBandwidth: commState.CommBandwidth,
+				LinkLoad:      commState.LinkLoad,
+				BaseRespInfo: models.BaseRespInfo{
+					Id:        commState.Id,
+					LastTime:  commState.LastTime,
+					ChainTime: commState.ChainTime,
+				},
+			})
+		}
+
+		SuccessfulJSONResp(resp, c)
+	}
+}
+
+func TraceGetCommetState(s *services.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		if err := checkTheAccessPermission(c, db.TRACE); err != nil {
+			WithoutPermissionJSONResp(err.Error(), c)
+			return
+		}
+		satelliteId := c.Query("satelliteId")
+
+		err := isStringRequiredParamsEmpty(satelliteId)
+		if err != nil {
+			ParamsMissingJSONResp(err.Error(), c)
+			return
+		}
+
+		model := new(db.CommState)
+
+		sqlRows, err := s.QueryObjectsByCondition(model, "satellite_id", satelliteId)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+		defer sqlRows.Close()
+
+		resp := make([]*models.CommStateHistoryInfo, 0)
+
+		for sqlRows.Next() {
+			var commState db.CommState
+			err := s.ScanRows(sqlRows, &commState)
+			if err != nil {
+				ServerErrorJSONResp(err.Error(), c)
+				return
+			}
+
+			resp = append(resp, &models.CommStateHistoryInfo{
+				CommStateInfo: models.CommStateInfo{
+					SatelliteId:   commState.SatelliteId,
+					SatelliteName: commState.SatelliteName,
+					OrbitId:       commState.OrbitId,
+					CommState:     commState.CommState,
+					CommPort:      commState.CommPort,
+					CommDelay:     commState.CommDelay,
+					CommBandwidth: commState.CommBandwidth,
+					LinkLoad:      commState.LinkLoad,
+
+					BaseRespInfo: models.BaseRespInfo{
+						Id:        commState.Id,
+						LastTime:  commState.LastTime,
+						ChainTime: commState.ChainTime,
+					},
+				},
+
+				HistoryRespInfo: models.HistoryRespInfo{
+					ChainId:     commState.ChainId,
+					BlockHeight: commState.BlockHeight,
+					TxId:        commState.TxId,
+				},
+			})
+		}
+
+		SuccessfulJSONResp(resp, c)
+	}
+}

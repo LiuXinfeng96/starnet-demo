@@ -23,7 +23,7 @@ const DEBRIS_TABLE_NAME = "debris"
 type Debris struct {
 	GeneralField
 	BlockChainField
-	DebrisId   string `gorm:"uniqueIndex"`
+	DebrisId   string `gorm:"index"`
 	DebrisName string `gorm:"index"`
 	Angle      float64
 	Speed      float64
