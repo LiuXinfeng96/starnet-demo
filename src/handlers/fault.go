@@ -136,7 +136,7 @@ func ExecGetFaultList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }
 
@@ -198,6 +198,6 @@ func TraceGetFault(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }

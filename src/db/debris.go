@@ -23,13 +23,14 @@ const DEBRIS_TABLE_NAME = "debris"
 type Debris struct {
 	GeneralField
 	BlockChainField
-	DebrisId   string `gorm:"index"`
-	DebrisName string `gorm:"index"`
-	Angle      float64
-	Speed      float64
-	Height     float64
-	Volunme    float64
-	Type       DebrisType
+	DebrisId     string `gorm:"index"`
+	DebrisName   string `gorm:"index"`
+	DebrisSource string
+	Angle        float64
+	Speed        float64
+	Height       float64
+	Volunme      float64
+	Type         DebrisType
 }
 
 var DebrisTypeName = map[DebrisType]string{

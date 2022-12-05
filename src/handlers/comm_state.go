@@ -138,7 +138,7 @@ func ExecGetCommStateList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }
 
@@ -202,6 +202,6 @@ func TraceGetCommetState(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var PHONE_NUM_REGEXP = regexp.MustCompile(`^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$`)
+var PHONE_NUM_REGEXP = regexp.MustCompile(`1[3456789]\d{9}`)
 
 var EMAIL_REFEXP = regexp.MustCompile(`^[0-9a-z][_.0-9a-z-]{0,31}@([0-9a-z][0-9a-z-]{0,30}[0-9a-z]\.){1,4}[a-z]{2,4}$`)
 
@@ -42,13 +42,13 @@ func SuccessfulJSONResp(data interface{}, c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func SuccessfulJSONRespWithPage(data interface{}, total int32, c *gin.Context) {
+func SuccessfulJSONRespWithPage(data interface{}, total int, c *gin.Context) {
 	resp := models.StandardRespWithPage{
 		StandardResp: models.StandardResp{
 			Code: models.RESP_CODE_SUCCESS,
 			Data: data,
 		},
-		Total: total,
+		Total: int32(total),
 	}
 	c.JSON(http.StatusOK, resp)
 }

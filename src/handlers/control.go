@@ -132,7 +132,7 @@ func ExecGetControlList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }
 
@@ -192,6 +192,6 @@ func TraceGetControl(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }

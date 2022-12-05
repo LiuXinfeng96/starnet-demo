@@ -83,13 +83,14 @@ type HistoryRespInfo struct {
 }
 
 type DebrisInfo struct {
-	DebrisId   string  `json:"debrisId"`
-	DebrisName string  `json:"debrisName"`
-	Angle      float64 `json:"angle"`
-	Speed      float64 `json:"speed"`
-	Height     float64 `json:"height"`
-	Volume     float64 `json:"volume"`
-	Type       string  `json:"type"`
+	DebrisId     string  `json:"debrisId"`
+	DebrisName   string  `json:"debrisName"`
+	DebrisSource string  `json:"debrisSource"`
+	Angle        float64 `json:"angle"`
+	Speed        float64 `json:"speed"`
+	Height       float64 `json:"height"`
+	Volume       float64 `json:"volume"`
+	Type         string  `json:"type"`
 	BaseRespInfo
 }
 
@@ -100,8 +101,8 @@ type DebrisHistoryInfo struct {
 
 type InstructionInfo struct {
 	BaseRespInfo
-	InstructtionId      string `json:"instructtionId"`
-	InstructtionType    string `json:"instructtionType"`
+	InstructionId       string `json:"instructionId"`
+	InstructionType     string `json:"instructionType"`
 	ExecInstructionTime int64  `json:"execInstructionTime"`
 	InstructionSource   string `json:"instructionSource"`
 	DebrisId            string `json:"debrisId"`

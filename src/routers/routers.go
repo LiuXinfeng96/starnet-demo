@@ -41,7 +41,7 @@ func LoadControlRouter(s *services.Server) {
 		routerGroup.POST("/addinstruction", handlers.ControlAddInstruction(s))
 		routerGroup.GET("/getinstructionlist", handlers.ControlGetInstructionList(s))
 
-		routerGroup.POST("/getexecresultlist", handlers.ControlGetExecResultList(s))
+		routerGroup.GET("/getexecresultlist", handlers.ControlGetExecResultList(s))
 		routerGroup.GET("/getexecresult", handlers.ControlGetExecResult(s))
 
 		routerGroup.POST("/addorbit", handlers.ControlAddOrbit(s))

@@ -33,17 +33,18 @@ type LoginReq struct {
 }
 
 type AddDebirsReq struct {
-	DebrisId   string  `json:"debrisId"`
-	DebrisName string  `json:"debrisName"`
-	Angle      float64 `json:"angle"`
-	Speed      float64 `json:"speed"`
-	Height     float64 `json:"height"`
-	Volume     float64 `json:"volume"`
-	Type       string  `json:"type"`
+	DebrisId     string  `json:"debrisId"`
+	DebrisName   string  `json:"debrisName"`
+	DebrisSource string  `json:"debrisSource"`
+	Angle        float64 `json:"angle"`
+	Speed        float64 `json:"speed"`
+	Height       float64 `json:"height"`
+	Volume       float64 `json:"volume"`
+	Type         string  `json:"type"`
 }
 
 type AddInstructionReq struct {
-	InstructtionId     string `json:"instructtionId"`
+	InstructtionId     string `json:"instructionId"`
 	DebrisId           string `json:"debrisId"`
 	DebrisName         string `json:"debrisName"`
 	SatelliteId        string `json:"satelliteId"`

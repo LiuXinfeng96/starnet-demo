@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"starnet-demo/src/db"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -11,12 +10,9 @@ import (
 const DEFAULT_TOKEN_SECRET_KEY = "1045836262777123654"
 
 type MyClaims struct {
-	Id       int32
-	Role     string
-	Name     string
-	NickName string
-	PhoneNum string
-	Email    string
+	Id   int32
+	Role string
+	Name string
 	jwt.StandardClaims
 }
 
@@ -40,15 +36,12 @@ func (s *Server) ParseToken(token string) (*MyClaims, error) {
 	return nil, errors.New("invalid token")
 }
 
-func (s *Server) GenToken(user *db.User, expiresAt int64) (string, error) {
+func (s *Server) GenToken(id int32, name, role string, expiresAt int64) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, MyClaims{
-		Id:       user.Id,
-		Role:     db.UserRoleTypeName[user.UserRole],
-		Name:     user.UserName,
-		NickName: user.UserNickName,
-		PhoneNum: user.UserPhoneNum,
-		Email:    user.UserEmail,
+		Id:   id,
+		Role: role,
+		Name: name,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expiresAt,
 		},

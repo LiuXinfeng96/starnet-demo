@@ -24,7 +24,7 @@ func ControlAddDebris(s *services.Server) gin.HandlerFunc {
 		}
 
 		err := isStringRequiredParamsEmpty(req.DebrisId,
-			req.DebrisName, req.Type)
+			req.DebrisName, req.Type, req.DebrisSource)
 		if err != nil {
 			ParamsMissingJSONResp(err.Error(), c)
 			return
@@ -40,13 +40,14 @@ func ControlAddDebris(s *services.Server) gin.HandlerFunc {
 		// 2. 入库
 
 		debirs := &db.Debris{
-			DebrisId:   req.DebrisId,
-			DebrisName: req.DebrisName,
-			Angle:      req.Angle,
-			Speed:      req.Speed,
-			Height:     req.Height,
-			Volunme:    req.Volume,
-			Type:       debrisType,
+			DebrisId:     req.DebrisId,
+			DebrisName:   req.DebrisName,
+			DebrisSource: req.DebrisSource,
+			Angle:        req.Angle,
+			Speed:        req.Speed,
+			Height:       req.Height,
+			Volunme:      req.Volume,
+			Type:         debrisType,
 		}
 
 		err = s.InsertOneObjertToDB(debirs)
@@ -128,13 +129,14 @@ func ControlGetDebrisList(s *services.Server) gin.HandlerFunc {
 			}
 
 			resp = append(resp, &models.DebrisInfo{
-				DebrisId:   debris.DebrisId,
-				DebrisName: debris.DebrisName,
-				Angle:      debris.Angle,
-				Speed:      debris.Speed,
-				Height:     debris.Height,
-				Volume:     debris.Volunme,
-				Type:       db.DebrisTypeName[debris.Type],
+				DebrisId:     debris.DebrisId,
+				DebrisName:   debris.DebrisName,
+				DebrisSource: debris.DebrisSource,
+				Angle:        debris.Angle,
+				Speed:        debris.Speed,
+				Height:       debris.Height,
+				Volume:       debris.Volunme,
+				Type:         db.DebrisTypeName[debris.Type],
 				BaseRespInfo: models.BaseRespInfo{
 					Id:        debris.Id,
 					LastTime:  debris.LastTime,
@@ -143,7 +145,7 @@ func ControlGetDebrisList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }
 
@@ -164,7 +166,7 @@ func TraceGetDebris(s *services.Server) gin.HandlerFunc {
 
 		model := new(db.Debris)
 
-		sqlRows, err := s.QueryObjectsByCondition(model, "debirs_id", debirsId)
+		sqlRows, err := s.QueryObjectsByCondition(model, "debris_id", debirsId)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -183,13 +185,14 @@ func TraceGetDebris(s *services.Server) gin.HandlerFunc {
 
 			resp = append(resp, &models.DebrisHistoryInfo{
 				DebrisInfo: models.DebrisInfo{
-					DebrisId:   debris.DebrisId,
-					DebrisName: debris.DebrisName,
-					Angle:      debris.Angle,
-					Speed:      debris.Speed,
-					Height:     debris.Height,
-					Volume:     debris.Volunme,
-					Type:       db.DebrisTypeName[debris.Type],
+					DebrisId:     debris.DebrisId,
+					DebrisName:   debris.DebrisName,
+					DebrisSource: debris.DebrisSource,
+					Angle:        debris.Angle,
+					Speed:        debris.Speed,
+					Height:       debris.Height,
+					Volume:       debris.Volunme,
+					Type:         db.DebrisTypeName[debris.Type],
 					BaseRespInfo: models.BaseRespInfo{
 						Id:        debris.Id,
 						LastTime:  debris.LastTime,
@@ -203,8 +206,8 @@ func TraceGetDebris(s *services.Server) gin.HandlerFunc {
 				},
 			})
 		}
-		SuccessfulJSONResp(resp, c)
 
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }
 
@@ -351,6 +354,6 @@ func ExecGetDebrisList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }

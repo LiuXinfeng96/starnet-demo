@@ -32,6 +32,7 @@ type QueryObjectsParams struct {
 	SortType    SortType
 	SearchIndex []string
 	SearchInput string
+	QueryMap    map[string]string
 }
 
 func (s *Server) InsertOneObjertToDB(object interface{}) error {
@@ -58,7 +59,7 @@ func (s *Server) QueryObjectsWithPage(params *QueryObjectsParams) (*sql.Rows, er
 		offset := (params.Page - 1) * params.PageSize
 
 		querySub := s.gormDb.Model(params.ModelStruct).Select("id").
-			Order("last_time desc").Limit(int(params.PageSize)).Offset(int(offset))
+			Limit(int(params.PageSize)).Offset(int(offset))
 
 		if len(params.SearchIndex) != 0 && len(params.SearchInput) != 0 {
 			for i, v := range params.SearchIndex {
@@ -70,7 +71,14 @@ func (s *Server) QueryObjectsWithPage(params *QueryObjectsParams) (*sql.Rows, er
 			}
 		}
 
-		return s.gormDb.Model(params.ModelStruct).Joins("inner join (?) as t2 using(id)", querySub).Rows()
+		if len(params.QueryMap) != 0 {
+			for k, v := range params.QueryMap {
+				querySub = querySub.Where(k+" = ?", v)
+			}
+		}
+
+		return s.gormDb.Model(params.ModelStruct).Order("last_time desc").
+			Joins("inner join (?) as t2 using(id)", querySub).Rows()
 	default:
 		err := errors.New("the sort type does not exist")
 		s.sulog.Infof("query objects with page from db failed, err:[%s]\n",
@@ -86,7 +94,7 @@ func (s *Server) QueryObjectsWithPageSC(params *QueryObjectsParams) (*sql.Rows, 
 
 		querySub := s.gormDb.Model(params.ModelStruct).Select("id").
 			Where("chain_id = ?", s.satelliteChainId).
-			Order("last_time desc").Limit(int(params.PageSize)).Offset(int(offset))
+			Limit(int(params.PageSize)).Offset(int(offset))
 
 		if len(params.SearchIndex) != 0 && len(params.SearchInput) != 0 {
 			for i, v := range params.SearchIndex {
@@ -98,7 +106,14 @@ func (s *Server) QueryObjectsWithPageSC(params *QueryObjectsParams) (*sql.Rows, 
 			}
 		}
 
-		return s.gormDb.Model(params.ModelStruct).Joins("inner join (?) as t2 using(id)", querySub).Rows()
+		if len(params.QueryMap) != 0 {
+			for k, v := range params.QueryMap {
+				querySub = querySub.Where(k+" = ?", v)
+			}
+		}
+
+		return s.gormDb.Model(params.ModelStruct).Order("last_time desc").
+			Joins("inner join (?) as t2 using(id)", querySub).Rows()
 	default:
 		err := errors.New("the sort type does not exist")
 		s.sulog.Infof("query objects with page from db failed, err:[%s]\n",

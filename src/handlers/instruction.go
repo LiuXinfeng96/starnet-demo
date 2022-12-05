@@ -194,11 +194,14 @@ func ControlGetInstructionList(s *services.Server) gin.HandlerFunc {
 			SortType:    sortType,
 			SearchInput: searchInput,
 			SearchIndex: make([]string, 0),
+			QueryMap:    make(map[string]string),
 		}
 
 		if len(searchInput) != 0 {
 			params.SearchIndex = append(params.SearchIndex, "instruction_id")
 		}
+
+		params.QueryMap["exec_state"] = strconv.Itoa(int(db.NOTEXEC))
 
 		sqlRows, err := s.QueryObjectsWithPage(params)
 		if err != nil {
@@ -219,10 +222,10 @@ func ControlGetInstructionList(s *services.Server) gin.HandlerFunc {
 			}
 
 			resp = append(resp, &models.InstructionInfo{
-				InstructtionId:      instruction.InstructionId,
+				InstructionId:       instruction.InstructionId,
 				InstructionSource:   instruction.InstructionSource,
 				InstructionContent:  instruction.InstructionContent,
-				InstructtionType:    db.InstructionTypeName[instruction.Type],
+				InstructionType:     db.InstructionTypeName[instruction.Type],
 				ExecInstructionTime: instruction.ExecInstructionTime,
 				GenInstructionTime:  instruction.GenInstructionTime,
 				DebrisId:            instruction.DebrisId,
@@ -237,7 +240,7 @@ func ControlGetInstructionList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }
 
@@ -278,10 +281,10 @@ func TraceGetInstruction(s *services.Server) gin.HandlerFunc {
 			resp = append(resp, &models.InstructionDetails{
 				ExecState: db.ExecStateName[instruction.ExecState],
 				InstructionInfo: models.InstructionInfo{
-					InstructtionId:      instruction.InstructionId,
+					InstructionId:       instruction.InstructionId,
 					InstructionSource:   instruction.InstructionSource,
 					InstructionContent:  instruction.InstructionContent,
-					InstructtionType:    db.InstructionTypeName[instruction.Type],
+					InstructionType:     db.InstructionTypeName[instruction.Type],
 					ExecInstructionTime: instruction.ExecInstructionTime,
 					GenInstructionTime:  instruction.GenInstructionTime,
 					DebrisId:            instruction.DebrisId,
@@ -301,8 +304,8 @@ func TraceGetInstruction(s *services.Server) gin.HandlerFunc {
 				},
 			})
 		}
-		SuccessfulJSONResp(resp, c)
 
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }
 
@@ -375,10 +378,10 @@ func ControlGetExecResultList(s *services.Server) gin.HandlerFunc {
 
 			resp = append(resp, &models.InstructionResultInfo{
 				InstructionInfo: models.InstructionInfo{
-					InstructtionId:      instruction.InstructionId,
+					InstructionId:       instruction.InstructionId,
 					InstructionSource:   instruction.InstructionSource,
 					InstructionContent:  instruction.InstructionContent,
-					InstructtionType:    db.InstructionTypeName[instruction.Type],
+					InstructionType:     db.InstructionTypeName[instruction.Type],
 					ExecInstructionTime: instruction.ExecInstructionTime,
 					GenInstructionTime:  instruction.GenInstructionTime,
 					DebrisId:            instruction.DebrisId,
@@ -395,7 +398,7 @@ func ControlGetExecResultList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }
 
@@ -432,10 +435,10 @@ func ControlGetExecResult(s *services.Server) gin.HandlerFunc {
 		SuccessfulJSONResp(&models.InstructionResultInfo{
 			ExecState: db.ExecStateName[instruction.ExecState],
 			InstructionInfo: models.InstructionInfo{
-				InstructtionId:      instruction.InstructionId,
+				InstructionId:       instruction.InstructionId,
 				InstructionSource:   instruction.InstructionSource,
 				InstructionContent:  instruction.InstructionContent,
-				InstructtionType:    db.InstructionTypeName[instruction.Type],
+				InstructionType:     db.InstructionTypeName[instruction.Type],
 				ExecInstructionTime: instruction.ExecInstructionTime,
 				GenInstructionTime:  instruction.GenInstructionTime,
 				DebrisId:            instruction.DebrisId,
@@ -495,11 +498,14 @@ func ExecGetInstructionList(s *services.Server) gin.HandlerFunc {
 			SortType:    sortType,
 			SearchInput: searchInput,
 			SearchIndex: make([]string, 0),
+			QueryMap:    make(map[string]string),
 		}
 
 		if len(searchInput) != 0 {
 			params.SearchIndex = append(params.SearchIndex, "instruction_id")
 		}
+
+		params.QueryMap["exec_state"] = strconv.Itoa(int(db.NOTEXEC))
 
 		sqlRows, err := s.QueryObjectsWithPageSC(params)
 		if err != nil {
@@ -520,10 +526,10 @@ func ExecGetInstructionList(s *services.Server) gin.HandlerFunc {
 			}
 
 			resp = append(resp, &models.InstructionInfo{
-				InstructtionId:      instruction.InstructionId,
+				InstructionId:       instruction.InstructionId,
 				InstructionSource:   instruction.InstructionSource,
 				InstructionContent:  instruction.InstructionContent,
-				InstructtionType:    db.InstructionTypeName[instruction.Type],
+				InstructionType:     db.InstructionTypeName[instruction.Type],
 				ExecInstructionTime: instruction.ExecInstructionTime,
 				GenInstructionTime:  instruction.GenInstructionTime,
 				DebrisId:            instruction.DebrisId,
@@ -538,7 +544,7 @@ func ExecGetInstructionList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }
 
@@ -575,10 +581,10 @@ func ExecGetInstruction(s *services.Server) gin.HandlerFunc {
 		SuccessfulJSONResp(&models.InstructionDetails{
 			ExecState: db.ExecStateName[instruction.ExecState],
 			InstructionInfo: models.InstructionInfo{
-				InstructtionId:      instruction.InstructionId,
+				InstructionId:       instruction.InstructionId,
 				InstructionSource:   instruction.InstructionSource,
 				InstructionContent:  instruction.InstructionContent,
-				InstructtionType:    db.InstructionTypeName[instruction.Type],
+				InstructionType:     db.InstructionTypeName[instruction.Type],
 				ExecInstructionTime: instruction.ExecInstructionTime,
 				GenInstructionTime:  instruction.GenInstructionTime,
 				DebrisId:            instruction.DebrisId,
@@ -669,10 +675,10 @@ func ExecGetExecResultList(s *services.Server) gin.HandlerFunc {
 
 			resp = append(resp, &models.InstructionResultInfo{
 				InstructionInfo: models.InstructionInfo{
-					InstructtionId:      instruction.InstructionId,
+					InstructionId:       instruction.InstructionId,
 					InstructionSource:   instruction.InstructionSource,
 					InstructionContent:  instruction.InstructionContent,
-					InstructtionType:    db.InstructionTypeName[instruction.Type],
+					InstructionType:     db.InstructionTypeName[instruction.Type],
 					ExecInstructionTime: instruction.ExecInstructionTime,
 					GenInstructionTime:  instruction.GenInstructionTime,
 					DebrisId:            instruction.DebrisId,
@@ -689,7 +695,7 @@ func ExecGetExecResultList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }
 
@@ -726,10 +732,10 @@ func ExecGetExecResult(s *services.Server) gin.HandlerFunc {
 		SuccessfulJSONResp(&models.InstructionResultInfo{
 			ExecState: db.ExecStateName[instruction.ExecState],
 			InstructionInfo: models.InstructionInfo{
-				InstructtionId:      instruction.InstructionId,
+				InstructionId:       instruction.InstructionId,
 				InstructionSource:   instruction.InstructionSource,
 				InstructionContent:  instruction.InstructionContent,
-				InstructtionType:    db.InstructionTypeName[instruction.Type],
+				InstructionType:     db.InstructionTypeName[instruction.Type],
 				ExecInstructionTime: instruction.ExecInstructionTime,
 				GenInstructionTime:  instruction.GenInstructionTime,
 				DebrisId:            instruction.DebrisId,

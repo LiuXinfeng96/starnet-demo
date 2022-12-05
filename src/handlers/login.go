@@ -60,7 +60,8 @@ func Login(s *services.Server) gin.HandlerFunc {
 		}
 
 		tokenExpiresAt := time.Now().Add(2 * time.Hour).Unix()
-		token, err := s.GenToken(user, tokenExpiresAt)
+		token, err := s.GenToken(user.Id,
+			user.UserName, db.UserRoleTypeName[user.UserRole], tokenExpiresAt)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -150,30 +151,16 @@ func Register(s *services.Server) gin.HandlerFunc {
 func GetUserInfo(s *services.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		userName, ok := c.GetQuery("userName")
-		if !ok || len(userName) == 0 {
-			ParamsMissingJSONResp("not fount [userName]", c)
-			return
-		}
-
 		token, ok1 := c.Get("token")
 		claims, ok2 := token.(*services.MyClaims)
 
-		if ok1 && ok2 {
-			SuccessfulJSONResp(&models.UserInfo{
-				Id:           claims.Id,
-				UserName:     claims.Name,
-				UserRole:     claims.Role,
-				UserNickName: claims.NickName,
-				UserPhoneNum: claims.PhoneNum,
-				UserEmail:    claims.Email,
-				Expires:      claims.ExpiresAt,
-			}, c)
+		if !ok1 || !ok2 {
+			ServerErrorJSONResp("get the token from context failed", c)
 			return
 		}
 
 		user := new(db.User)
-		err := s.QueryObjectByCondition(user, "user_name", userName)
+		err := s.QueryObjectById(user, claims.Id)
 		if err != nil {
 			NotExistJSONResp(err.Error(), c)
 			return
@@ -186,7 +173,7 @@ func GetUserInfo(s *services.Server) gin.HandlerFunc {
 			UserNickName: user.UserNickName,
 			UserPhoneNum: user.UserPhoneNum,
 			UserEmail:    user.UserEmail,
-			Expires:      0,
+			Expires:      claims.StandardClaims.ExpiresAt,
 		}, c)
 
 	}
@@ -265,6 +252,6 @@ func ControlGetLoginLogList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONResp(resp, c)
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }
