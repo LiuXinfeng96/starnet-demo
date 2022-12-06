@@ -205,3 +205,93 @@ func TraceGetCommetState(s *services.Server) gin.HandlerFunc {
 		SuccessfulJSONRespWithPage(resp, len(resp), c)
 	}
 }
+
+func TraceGetCommStateList(s *services.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		if err := checkTheAccessPermission(c, db.TRACE); err != nil {
+			WithoutPermissionJSONResp(err.Error(), c)
+			return
+		}
+
+		pageStr := c.Query("page")
+		pageSizeStr := c.Query("pageSize")
+		sortTypeStr := c.Query("sortType")
+		searchInput := c.Query("searchConditions")
+
+		err := isStringRequiredParamsEmpty(pageSizeStr, pageStr)
+		if err != nil {
+			ParamsMissingJSONResp(err.Error(), c)
+			return
+		}
+
+		page, err := strconv.Atoi(pageStr)
+		if err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		pageSize, err := strconv.Atoi(pageSizeStr)
+		if err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		sortType, ok := services.SortTypeValue[sortTypeStr]
+		if !ok {
+			sortType = services.SORTTYPE_TIME
+		}
+
+		params := &services.QueryLatestObjectsParams{
+			ModelStruct: new(db.CommState),
+			Page:        int32(page),
+			PageSize:    int32(pageSize),
+			SortType:    sortType,
+			SearchInput: searchInput,
+			SearchIndex: make([]string, 0),
+			GroupIndex:  "satellite_id",
+		}
+
+		if len(searchInput) != 0 {
+			params.SearchIndex = append(params.SearchIndex, "satellite_id")
+			params.SearchIndex = append(params.SearchIndex, "satellite_name")
+		}
+
+		sqlRows, err := s.QueryLatestObjectsWithPage(params)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		defer sqlRows.Close()
+
+		resp := make([]*models.CommStateInfo, 0)
+
+		for sqlRows.Next() {
+			var commState db.CommState
+			err := s.ScanRows(sqlRows, &commState)
+			if err != nil {
+				ServerErrorJSONResp(err.Error(), c)
+				return
+			}
+
+			resp = append(resp, &models.CommStateInfo{
+				SatelliteId:   commState.SatelliteId,
+				SatelliteName: commState.SatelliteName,
+				OrbitId:       commState.OrbitId,
+				CommState:     commState.CommState,
+				CommPort:      commState.CommPort,
+				CommDelay:     commState.CommDelay,
+				CommBandwidth: commState.CommBandwidth,
+				LinkLoad:      commState.LinkLoad,
+				BaseRespInfo: models.BaseRespInfo{
+					Id:        commState.Id,
+					LastTime:  commState.LastTime,
+					ChainTime: commState.ChainTime,
+				},
+			})
+		}
+
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
+	}
+}

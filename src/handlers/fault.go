@@ -55,7 +55,7 @@ func ExecAddFault(s *services.Server) gin.HandlerFunc {
 func ExecGetFaultList(s *services.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		if err := checkTheAccessPermission(c, db.EXEC); err != nil {
+		if err := checkTheAccessPermission(c, db.EXEC, db.TRACE); err != nil {
 			WithoutPermissionJSONResp(err.Error(), c)
 			return
 		}
@@ -194,6 +194,95 @@ func TraceGetFault(s *services.Server) gin.HandlerFunc {
 					ChainId:     fault.ChainId,
 					BlockHeight: fault.BlockHeight,
 					TxId:        fault.TxId,
+				},
+			})
+		}
+
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
+	}
+}
+
+func TraceGetFaultList(s *services.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		if err := checkTheAccessPermission(c, db.TRACE); err != nil {
+			WithoutPermissionJSONResp(err.Error(), c)
+			return
+		}
+
+		pageStr := c.Query("page")
+		pageSizeStr := c.Query("pageSize")
+		sortTypeStr := c.Query("sortType")
+		searchInput := c.Query("searchConditions")
+
+		err := isStringRequiredParamsEmpty(pageSizeStr, pageStr)
+		if err != nil {
+			ParamsMissingJSONResp(err.Error(), c)
+			return
+		}
+
+		page, err := strconv.Atoi(pageStr)
+		if err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		pageSize, err := strconv.Atoi(pageSizeStr)
+		if err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		sortType, ok := services.SortTypeValue[sortTypeStr]
+		if !ok {
+			sortType = services.SORTTYPE_TIME
+		}
+
+		params := &services.QueryLatestObjectsParams{
+			ModelStruct: new(db.Fault),
+			Page:        int32(page),
+			PageSize:    int32(pageSize),
+			SortType:    sortType,
+			SearchInput: searchInput,
+			SearchIndex: make([]string, 0),
+			GroupIndex:  "satellite_id",
+		}
+
+		if len(searchInput) != 0 {
+			params.SearchIndex = append(params.SearchIndex, "satellite_id")
+			params.SearchIndex = append(params.SearchIndex, "satellite_name")
+		}
+
+		sqlRows, err := s.QueryLatestObjectsWithPage(params)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		defer sqlRows.Close()
+
+		resp := make([]*models.FaultInfo, 0)
+
+		for sqlRows.Next() {
+			var fault db.Fault
+			err := s.ScanRows(sqlRows, &fault)
+			if err != nil {
+				ServerErrorJSONResp(err.Error(), c)
+				return
+			}
+
+			resp = append(resp, &models.FaultInfo{
+				SatelliteId:      fault.SatelliteId,
+				SatelliteName:    fault.SatelliteName,
+				OrbitId:          fault.OrbitId,
+				FaultType:        fault.FaultType,
+				FaultDescription: fault.FaultDescription,
+				FaultTime:        fault.FaultTime,
+				RepairState:      fault.RepairState,
+				BaseRespInfo: models.BaseRespInfo{
+					Id:        fault.Id,
+					LastTime:  fault.LastTime,
+					ChainTime: fault.ChainTime,
 				},
 			})
 		}

@@ -31,6 +31,8 @@ const (
 	RESP_CODE_PARAMS_VALUE_ERROR = 104
 
 	RESP_CODE_WITHOUT_PERMISSION = 301
+
+	RESP_CODE_NOT_IN_CHAIN = 302
 )
 
 const (
@@ -51,6 +53,8 @@ const (
 	RESP_MSG_NOT_EXIST = "唯一索引不存在"
 
 	RESP_MSG_PWD_ERROR = "密码错误"
+
+	RESP_MSG_NOT_IN_CHAIN = "不属于链上用户，无法操作链"
 )
 
 type UserInfo struct {

@@ -2,10 +2,13 @@ package services
 
 import (
 	"starnet-demo/src/configs"
+	"starnet-demo/src/db"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+
+	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 )
 
 type Server struct {
@@ -14,6 +17,7 @@ type Server struct {
 	log              *zap.Logger
 	sulog            *zap.SugaredLogger
 	gormDb           *gorm.DB
+	sdkPool          *SdkPool
 	satelliteChainId string
 }
 
@@ -50,6 +54,12 @@ func WithGormDb(db *gorm.DB) Option {
 	}
 }
 
+func WithSdkPool(maxEntries int) Option {
+	return func(s *Server) {
+		s.sdkPool = NewSdkPool(maxEntries)
+	}
+}
+
 func NewServer(opts ...Option) (*Server, error) {
 	server := new(Server)
 	server.satelliteChainId = "testchain"
@@ -74,4 +84,59 @@ func (s *Server) GetLogger() *zap.Logger {
 
 func (s *Server) GetSuLogger() *zap.SugaredLogger {
 	return s.sulog
+}
+
+func (s *Server) InitChainClient() {
+
+	masterName := s.config.BCConfig[0].UserName
+	user := new(db.User)
+	err := s.QueryObjectByCondition(user, "user_name", masterName)
+	if err != nil {
+		materUser := &db.User{
+			UserName:     masterName,
+			UserRole:     db.CONTROL,
+			UserPwd:      s.config.BCConfig[0].UserPwd,
+			UserNickName: "主链用户",
+			UserPhoneNum: "",
+			UserEmail:    "",
+		}
+		err := s.InsertOneObjertToDB(materUser)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	execName := s.config.BCConfig[1].UserName
+	user = new(db.User)
+	err = s.QueryObjectByCondition(user, "user_name", execName)
+	if err != nil {
+		execUser := &db.User{
+			UserName:     execName,
+			UserRole:     db.EXEC,
+			UserPwd:      s.config.BCConfig[1].UserPwd,
+			UserNickName: "星座链用户",
+			UserPhoneNum: "",
+			UserEmail:    "",
+		}
+		err := s.InsertOneObjertToDB(execUser)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	masterClient, err := sdk.NewChainClient(
+		sdk.WithConfPath(s.config.BCConfig[0].SdkConfigPath))
+	if err != nil {
+		panic(err)
+	}
+
+	s.sdkPool.Add(masterName, masterClient)
+
+	execClient, err := sdk.NewChainClient(
+		sdk.WithConfPath(s.config.BCConfig[1].SdkConfigPath))
+	if err != nil {
+		panic(err)
+	}
+	s.sdkPool.Add(execName, execClient)
+
 }

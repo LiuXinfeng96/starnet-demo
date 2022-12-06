@@ -33,6 +33,7 @@ func main() {
 		services.WithGormDb(db),
 		services.WithLog(logger),
 		services.WithSuLog(sugaredLogger),
+		services.WithSdkPool(100),
 	)
 	if err != nil {
 		panic(err)
@@ -42,6 +43,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	server.InitChainClient()
 
 }
 
@@ -62,7 +65,7 @@ func Start(s *services.Server) error {
 	routers.LoadNoTokenRouter(s)
 
 	s.GetGinEngine().Use(handlers.JWTAuthMiddleware(s))
-	
+
 	routers.LoadUserRouter(s)
 
 	routers.LoadControlRouter(s)

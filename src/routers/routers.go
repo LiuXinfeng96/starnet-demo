@@ -93,14 +93,31 @@ func LoadTraceRouter(s *services.Server) {
 	routerGroup := s.GetGinEngine().Group(ROUTERS_TRACE)
 	{
 		routerGroup.GET("/getdebrishistory", handlers.TraceGetDebris(s))
+		routerGroup.GET("/tracedebrislist", handlers.TraceGetDebrisList(s))
+
 		routerGroup.GET("/getinstructionhistory", handlers.TraceGetInstruction(s))
+		routerGroup.GET("/traceinstructionlist", handlers.TraceGetInstructionList(s))
+
 		routerGroup.GET("/getconstellationhistory", handlers.TraceGetConstellation(s))
+		routerGroup.GET("/traceconstellationlist", handlers.TraceGetConstellationList(s))
+
 		routerGroup.GET("/getoperationhistory", handlers.TraceGetOperation(s))
+		routerGroup.GET("/traceoperationlist", handlers.TraceGetOperationList(s))
+
 		routerGroup.GET("/getsatellitestatehistory", handlers.TraceGetSatelliteState(s))
+		routerGroup.GET("/tracesatellitestatelist", handlers.TraceGetSatelliteStateList(s))
+
 		routerGroup.GET("/getcontrolshistory", handlers.TraceGetControl(s))
+		routerGroup.GET("/tracecontrolslist", handlers.TraceGetControlList(s))
+
 		routerGroup.GET("/getfaulthistory", handlers.TraceGetFault(s))
+		routerGroup.GET("/tracefaultlist", handlers.TraceGetFaultList(s))
+
 		routerGroup.GET("/getnetstatehistory", handlers.TraceGetNetState(s))
+		routerGroup.GET("/tracenetstatelist", handlers.TraceGetNetStateList(s))
+
 		routerGroup.GET("/getcommstatehistory", handlers.TraceGetCommetState(s))
+		routerGroup.GET("/tracecommstatelist", handlers.TraceGetCommStateList(s))
 	}
 }
 

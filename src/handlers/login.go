@@ -182,7 +182,7 @@ func GetUserInfo(s *services.Server) gin.HandlerFunc {
 func ControlGetLoginLogList(s *services.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		if err := checkTheAccessPermission(c, db.CONTROL); err != nil {
+		if err := checkTheAccessPermission(c, db.CONTROL, db.TRACE); err != nil {
 			WithoutPermissionJSONResp(err.Error(), c)
 			return
 		}

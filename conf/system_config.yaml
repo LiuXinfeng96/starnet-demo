@@ -19,11 +19,60 @@ db_config:
   port: 3306
   dbname: chainmaker
 
+
 block_chain_config:
-  - user_id: admin1
-    chain_id: master
+  - user_name: master
+    user_pwd: 1234
     sdk_config_path: ../conf/masterchain_sdk_config.yaml
 
-  - user_id: admin2
-    chain_id: satellite
+  - user_name: exec
+    user_pwd: 1234
     sdk_config_path: ../conf/satellitechain_sdk_config.yaml
+
+master_contract:
+  debris:
+    name: "debris"
+    version: "v1.0.0"
+  instruction:
+    name: "instruction"
+    version: "v1.0.0"
+  orbit:
+    name: "orbit"
+    version: "v1.0.0"
+  constellation:
+    name: "constellation"
+    version: "v1.0.0"
+  loginlog:
+    name: "loginlog"
+    version: "v1.0.0"
+  operation:
+    name: "operation"
+    version: "v1.0.0"
+exec_contract:
+  debris:
+    name: "debris"
+    version: "v1.0.0"
+  satellite:
+    name: "satellite"
+    version: "v1.0.0"
+  instruction:
+    name: "instruction"
+    version: "v1.0.0"
+  exec:
+    name: "exec"
+    version: "v1.0.0"
+  control:
+    name: "control"
+    version: "v1.0.0"
+  fault:
+    name: "fault"
+    version: "v1.0.0"
+  commstate:
+    name: "commstate"
+    version: "v1.0.0"
+  netstate:
+    name: "netstate"
+    version: "v1.0.0"
+  operation:
+    name: "operation"
+    version: "v1.0.0"

@@ -751,3 +751,94 @@ func ExecGetExecResult(s *services.Server) gin.HandlerFunc {
 		}, c)
 	}
 }
+
+func TraceGetInstructionList(s *services.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		if err := checkTheAccessPermission(c, db.CONTROL); err != nil {
+			WithoutPermissionJSONResp(err.Error(), c)
+			return
+		}
+
+		pageStr := c.Query("page")
+		pageSizeStr := c.Query("pageSize")
+		sortTypeStr := c.Query("sortType")
+		searchInput := c.Query("searchConditions")
+
+		err := isStringRequiredParamsEmpty(pageSizeStr, pageStr)
+		if err != nil {
+			ParamsMissingJSONResp(err.Error(), c)
+			return
+		}
+
+		page, err := strconv.Atoi(pageStr)
+		if err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		pageSize, err := strconv.Atoi(pageSizeStr)
+		if err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		sortType, ok := services.SortTypeValue[sortTypeStr]
+		if !ok {
+			sortType = services.SORTTYPE_TIME
+		}
+
+		params := &services.QueryLatestObjectsParams{
+			ModelStruct: new(db.Instruction),
+			Page:        int32(page),
+			PageSize:    int32(pageSize),
+			SortType:    sortType,
+			SearchInput: searchInput,
+			SearchIndex: make([]string, 0),
+			GroupIndex:  "instruction_id",
+		}
+
+		if len(searchInput) != 0 {
+			params.SearchIndex = append(params.SearchIndex, "instruction_id")
+		}
+
+		sqlRows, err := s.QueryLatestObjectsWithPage(params)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		defer sqlRows.Close()
+
+		resp := make([]*models.InstructionInfo, 0)
+
+		for sqlRows.Next() {
+			var instruction db.Instruction
+			err := s.ScanRows(sqlRows, &instruction)
+			if err != nil {
+				ServerErrorJSONResp(err.Error(), c)
+				return
+			}
+
+			resp = append(resp, &models.InstructionInfo{
+				InstructionId:       instruction.InstructionId,
+				InstructionSource:   instruction.InstructionSource,
+				InstructionContent:  instruction.InstructionContent,
+				InstructionType:     db.InstructionTypeName[instruction.Type],
+				ExecInstructionTime: instruction.ExecInstructionTime,
+				GenInstructionTime:  instruction.GenInstructionTime,
+				DebrisId:            instruction.DebrisId,
+				DebrisName:          instruction.DebrisName,
+				SatelliteId:         instruction.SatelliteId,
+				SatelliteName:       instruction.SatelliteName,
+				BaseRespInfo: models.BaseRespInfo{
+					Id:        instruction.Id,
+					LastTime:  instruction.LastTime,
+					ChainTime: instruction.ChainTime,
+				},
+			})
+		}
+
+		SuccessfulJSONRespWithPage(resp, len(resp), c)
+	}
+}

@@ -78,7 +78,7 @@ var CertUsageTypeValue = map[string]CertUsageType{
 
 type BlockChainIdentity struct {
 	GeneralField
-	UserId          int32
+	UserName        string
 	ChainId         string
 	ChainOrg        string
 	ChainRole       ChainRoleType

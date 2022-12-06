@@ -134,6 +134,15 @@ func PwdErrorJSONResp(err string, c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+func NotInChainJSONResp(err string, c *gin.Context) {
+	resp := models.StandardResp{
+		Code: models.RESP_CODE_NOT_IN_CHAIN,
+		Msg:  models.RESP_MSG_NOT_IN_CHAIN,
+		Data: err,
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
 func isStringRequiredParamsEmpty(params ...string) error {
 	for _, p := range params {
 		if len(p) == 0 {
@@ -158,7 +167,7 @@ func checkTheEmail(email string) error {
 	return nil
 }
 
-func checkTheAccessPermission(c *gin.Context, dbRole db.UserRoleType) error {
+func checkTheAccessPermission(c *gin.Context, dbRole ...db.UserRoleType) error {
 
 	token, ok := c.Get("token")
 	if !ok {
@@ -175,9 +184,12 @@ func checkTheAccessPermission(c *gin.Context, dbRole db.UserRoleType) error {
 	if !ok {
 		return errors.New("the user role not found")
 	}
-	if roleType != dbRole {
-		return errors.New("access without permission")
+
+	for _, v := range dbRole {
+		if roleType == v {
+			return nil
+		}
 	}
 
-	return nil
+	return errors.New("access without permission")
 }

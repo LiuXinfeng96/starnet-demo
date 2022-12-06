@@ -1,23 +1,5 @@
 package models
 
-// type TokenReq struct {
-// 	Token string `json:"token"`
-// }
-// type PageReq struct {
-// 	PageSize int32 `json:"pageSize"`
-// 	Page     int32 `json:"page"`
-// }
-
-// type QueryReq struct {
-// 	SortType         string `json:"sortType"`
-// 	SearchConditions string `json:"searchConditions"`
-// }
-
-// type QueryListReq struct {
-// 	QueryReq
-// 	PageReq
-// }
-
 type RegisterReq struct {
 	UserName     string `json:"userName"`
 	UserPwd      string `json:"userPwd"`

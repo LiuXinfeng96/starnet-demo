@@ -12,8 +12,8 @@ import (
 )
 
 type BlockChainConfig struct {
-	UserId        string `mapstructure:"user_id"`
-	ChainId       string `mapstructure:"chain_id"`
+	UserName      string `mapstructure:"user_name"`
+	UserPwd       string `mapstructure:"user_pwd"`
 	SdkConfigPath string `mapstructure:"sdk_config_path"`
 }
 
@@ -22,6 +22,34 @@ type Config struct {
 	LogConfig  *loggers.LogConfig  `mapstructure:"log_config"`
 	DBConfig   *db.DBConfig        `mapstructure:"db_config"`
 	BCConfig   []*BlockChainConfig `mapstructure:"block_chain_config"`
+	MaterC     *MasterContract     `mapstructure:"master_contract"`
+	ExecC      *ExecContract       `mapstructure:"exec_contract"`
+}
+
+type Contract struct {
+	Name    string `mapstructure:"name"`
+	Version string `mapstructure:"name"`
+}
+
+type MasterContract struct {
+	Debris        *Contract `mapstructure:"debris"`
+	Instruction   *Contract `mapstructure:"instruction"`
+	Orbit         *Contract `mapstructure:"orbit"`
+	Constellation *Contract `mapstructure:"constellation"`
+	Loginlog      *Contract `mapstructure:"loginlog"`
+	Operation     *Contract `mapstructure:"operation"`
+}
+
+type ExecContract struct {
+	Debris      *Contract `mapstructure:"debris"`
+	Satellite   *Contract `mapstructure:"satellite"`
+	Instruction *Contract `mapstructure:"instruction"`
+	Exec        *Contract `mapstructure:"exec"`
+	Control     *Contract `mapstructure:"control"`
+	Fault       *Contract `mapstructure:"fault"`
+	Commstate   *Contract `mapstructure:"commstate"`
+	Netstate    *Contract `mapstructure:"netstate"`
+	Operation   *Contract `mapstructure:"operation"`
 }
 
 const DEFAULT_SERVER_PORT = "8096"
@@ -79,7 +107,7 @@ func InitConfig(configPath string) (*Config, error) {
 		return nil, errors.New("not found the db config")
 	}
 
-	if conf.BCConfig == nil || len(conf.BCConfig) == 0 {
+	if conf.BCConfig == nil || len(conf.BCConfig) < 2 {
 		return nil, errors.New("not found the block chain config")
 	}
 
