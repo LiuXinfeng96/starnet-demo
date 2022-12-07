@@ -33,6 +33,8 @@ const (
 	RESP_CODE_WITHOUT_PERMISSION = 301
 
 	RESP_CODE_NOT_IN_CHAIN = 302
+
+	RESP_CODE_CHAIN_PUT_FAIL = 600
 )
 
 const (
@@ -55,6 +57,8 @@ const (
 	RESP_MSG_PWD_ERROR = "密码错误"
 
 	RESP_MSG_NOT_IN_CHAIN = "不属于链上用户，无法操作链"
+
+	RESP_MSG_CHAIN_PUT_FAIL = "上链失败"
 )
 
 type UserInfo struct {

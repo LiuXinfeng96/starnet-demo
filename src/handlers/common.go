@@ -143,6 +143,15 @@ func NotInChainJSONResp(err string, c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
+func PutChainFailJSONResp(err string, c *gin.Context) {
+	resp := models.StandardResp{
+		Code: models.RESP_CODE_CHAIN_PUT_FAIL,
+		Msg:  models.RESP_MSG_CHAIN_PUT_FAIL,
+		Data: err,
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
 func isStringRequiredParamsEmpty(params ...string) error {
 	for _, p := range params {
 		if len(p) == 0 {

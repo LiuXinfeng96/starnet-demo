@@ -104,7 +104,7 @@ func (s *Server) QueryObjectsWithPageSC(params *QueryObjectsParams) (*sql.Rows, 
 		offset := (params.Page - 1) * params.PageSize
 
 		querySub := s.gormDb.Model(params.ModelStruct).Select("id").
-			Where("chain_id = ?", s.satelliteChainId).
+			Where("chain_id = ?", s.GetExecChainId()).
 			Limit(int(params.PageSize)).Offset(int(offset))
 
 		if len(params.SearchIndex) != 0 && len(params.SearchInput) != 0 {

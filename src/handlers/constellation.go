@@ -1,11 +1,14 @@
 package handlers
 
 import (
+	"encoding/json"
+	"starnet-demo/src/contract"
 	"starnet-demo/src/db"
 	"starnet-demo/src/models"
 	"starnet-demo/src/services"
 	"strconv"
 
+	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,7 +42,45 @@ func ControlAddConstellation(s *services.Server) gin.HandlerFunc {
 			SatelliteTotalNum:  req.SatelliteTotalNum,
 			SatelliteUpNum:     req.SatelliteUpNum,
 			SatelliteDownNum:   req.SatelliteDownNum,
+			BlockChainField: db.BlockChainField{
+				ChainId: s.GetMasterChainId(),
+			},
 		}
+
+		token, ok1 := c.Get("token")
+		claims, ok2 := token.(*services.MyClaims)
+		if !ok1 || !ok2 {
+			ServerErrorJSONResp("get the token from context failed", c)
+			return
+		}
+		client, err := s.GetSdkClient(claims.Name)
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
+		kvs := contract.ConstellationConvert(constellation)
+
+		chainResp, err := client.InvokeContract(s.GetMasterContractName(),
+			contract.MASTER_CONTRACT_FUNC_NAME_PUT_CONSTELLATION, "", kvs, -1, true)
+		if err != nil {
+			PutChainFailJSONResp(err.Error(), c)
+			return
+		}
+		if chainResp.Code != common.TxStatusCode_SUCCESS {
+			PutChainFailJSONResp(chainResp.Message, c)
+			return
+		}
+
+		var resp models.ContractResp
+		err = json.Unmarshal(chainResp.ContractResult.Result, &resp)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+		constellation.TxId = chainResp.TxId
+		constellation.BlockHeight = resp.BlockHeight
+		constellation.ChainTime = resp.ChainTime
 
 		err = s.InsertOneObjertToDB(constellation)
 		if err != nil {

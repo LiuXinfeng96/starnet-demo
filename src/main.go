@@ -39,12 +39,12 @@ func main() {
 		panic(err)
 	}
 
+	server.InitChainClient()
+
 	err = Start(server)
 	if err != nil {
 		panic(err)
 	}
-
-	server.InitChainClient()
 
 }
 

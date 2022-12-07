@@ -22,34 +22,13 @@ type Config struct {
 	LogConfig  *loggers.LogConfig  `mapstructure:"log_config"`
 	DBConfig   *db.DBConfig        `mapstructure:"db_config"`
 	BCConfig   []*BlockChainConfig `mapstructure:"block_chain_config"`
-	MaterC     *MasterContract     `mapstructure:"master_contract"`
-	ExecC      *ExecContract       `mapstructure:"exec_contract"`
+	MaterC     *Contract           `mapstructure:"master_contract"`
+	ExecC      *Contract           `mapstructure:"exec_contract"`
 }
 
 type Contract struct {
 	Name    string `mapstructure:"name"`
-	Version string `mapstructure:"name"`
-}
-
-type MasterContract struct {
-	Debris        *Contract `mapstructure:"debris"`
-	Instruction   *Contract `mapstructure:"instruction"`
-	Orbit         *Contract `mapstructure:"orbit"`
-	Constellation *Contract `mapstructure:"constellation"`
-	Loginlog      *Contract `mapstructure:"loginlog"`
-	Operation     *Contract `mapstructure:"operation"`
-}
-
-type ExecContract struct {
-	Debris      *Contract `mapstructure:"debris"`
-	Satellite   *Contract `mapstructure:"satellite"`
-	Instruction *Contract `mapstructure:"instruction"`
-	Exec        *Contract `mapstructure:"exec"`
-	Control     *Contract `mapstructure:"control"`
-	Fault       *Contract `mapstructure:"fault"`
-	Commstate   *Contract `mapstructure:"commstate"`
-	Netstate    *Contract `mapstructure:"netstate"`
-	Operation   *Contract `mapstructure:"operation"`
+	ChainId string `mapstructure:"chain_id"`
 }
 
 const DEFAULT_SERVER_PORT = "8096"
