@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"starnet-demo/src/contract"
 	"starnet-demo/src/db"
 	"starnet-demo/src/models"
@@ -53,7 +52,7 @@ func ControlAddConstellation(s *services.Server) gin.HandlerFunc {
 			ServerErrorJSONResp("get the token from context failed", c)
 			return
 		}
-		client, err := s.GetSdkClient(claims.Name)
+		client, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
 		if err != nil {
 			NotInChainJSONResp(err.Error(), c)
 			return
@@ -72,15 +71,11 @@ func ControlAddConstellation(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		var resp models.ContractResp
-		err = json.Unmarshal(chainResp.ContractResult.Result, &resp)
+		constellation.BlockChainField, err = GetBlockChainFiledFromResp(chainResp.ContractResult)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
 		}
-		constellation.TxId = chainResp.TxId
-		constellation.BlockHeight = resp.BlockHeight
-		constellation.ChainTime = resp.ChainTime
 
 		err = s.InsertOneObjertToDB(constellation)
 		if err != nil {

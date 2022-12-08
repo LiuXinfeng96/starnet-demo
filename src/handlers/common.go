@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"regexp"
@@ -8,6 +9,7 @@ import (
 	"starnet-demo/src/models"
 	"starnet-demo/src/services"
 
+	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -201,4 +203,17 @@ func checkTheAccessPermission(c *gin.Context, dbRole ...db.UserRoleType) error {
 	}
 
 	return errors.New("access without permission")
+}
+
+func GetBlockChainFiledFromResp(cr *common.ContractResult) (db.BlockChainField, error) {
+	var resp models.ContractResp
+	err := json.Unmarshal(cr.Result, &resp)
+	if err != nil {
+		return db.BlockChainField{}, err
+	}
+	var bcFiled db.BlockChainField
+	bcFiled.TxId = resp.TxId
+	bcFiled.BlockHeight = resp.BlockHeight
+	bcFiled.ChainTime = resp.ChainTime
+	return bcFiled, nil
 }

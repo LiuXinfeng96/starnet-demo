@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"starnet-demo/src/contract"
 	"starnet-demo/src/db"
 	"starnet-demo/src/models"
 	"starnet-demo/src/services"
 	"strconv"
 
+	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -44,7 +46,60 @@ func ExecAddSatelliteState(s *services.Server) gin.HandlerFunc {
 			RunState:      runState,
 			MeanAnomaly:   req.MeanAnomaly,
 			Speed:         req.Speed,
+			BlockChainField: db.BlockChainField{
+				ChainId: s.GetExecChainId(),
+			},
 		}
+
+		token, ok1 := c.Get("token")
+		claims, ok2 := token.(*services.MyClaims)
+		if !ok1 || !ok2 {
+			ServerErrorJSONResp("get the token from context failed", c)
+			return
+		}
+		client, err := s.GetSdkClient(claims.Name + s.GetExecChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
+		kvs := contract.SatelliteConvert(satellite)
+
+		chainResp, err := client.InvokeContract(s.GetExecContractName(),
+			contract.EXEC_CONTRACT_FUNC_NAME_PUT_SATELLITE, "", kvs, -1, true)
+		if err != nil {
+			PutChainFailJSONResp(err.Error(), c)
+			return
+		}
+		if chainResp.Code != common.TxStatusCode_SUCCESS {
+			PutChainFailJSONResp(chainResp.Message, c)
+			return
+		}
+
+		satellite.BlockChainField, err = GetBlockChainFiledFromResp(chainResp.ContractResult)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		go func() {
+			masterClient, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
+			if err != nil {
+				s.GetSuLogger().Warn(err)
+				return
+			}
+			resp, err := masterClient.InvokeContract(s.GetMasterContractName(),
+				contract.MASTER_CONTRACT_FUNC_NAME_PUT_SATELLITE, "", kvs, -1, true)
+			if err != nil {
+				s.GetSuLogger().Warn(err)
+				return
+			}
+			if resp.Code != common.TxStatusCode_SUCCESS {
+				s.GetSuLogger().Warnf("invoke contract failed: tx status code: [%d], msg: [%s]\n",
+					resp.Code, resp.Message)
+				return
+			}
+		}()
 
 		err = s.InsertOneObjertToDB(satellite)
 		if err != nil {

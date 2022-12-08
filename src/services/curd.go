@@ -55,7 +55,7 @@ func (s *Server) InsertOneObjertToDB(object interface{}) error {
 	return nil
 }
 
-func (s *Server) InsertObjectsToDB(objects []interface{}) error {
+func (s *Server) InsertObjectsToDB(objects interface{}) error {
 	if err := s.gormDb.CreateInBatches(objects, DEFAULT_BATCHES_SIZE).Error; err != nil {
 		s.sulog.Infof("insert objects to db failed, err:[%s]\n",
 			err.Error())

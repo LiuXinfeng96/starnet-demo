@@ -118,8 +118,6 @@ func (s *Server) InitChainClient() {
 		panic(err)
 	}
 
-	s.sdkPool.Add(masterName, masterClient)
-
 	execClient, err := sdk.NewChainClient(
 		sdk.WithConfPath(s.config.BCConfig[1].SdkConfigPath),
 		sdk.WithChainClientLogger(s.sulog),
@@ -127,7 +125,12 @@ func (s *Server) InitChainClient() {
 	if err != nil {
 		panic(err)
 	}
-	s.sdkPool.Add(execName, execClient)
+
+	s.sdkPool.Add(masterName+s.GetMasterChainId(), masterClient)
+	s.sdkPool.Add(masterName+s.GetExecChainId(), execClient)
+
+	s.sdkPool.Add(execName+s.GetExecChainId(), execClient)
+	s.sdkPool.Add(execName+s.GetMasterChainId(), masterClient)
 
 }
 

@@ -7,6 +7,7 @@ import (
 	"starnet-demo/src/models"
 	"starnet-demo/src/services"
 	"strconv"
+	"time"
 
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"github.com/gin-gonic/gin"
@@ -39,9 +40,6 @@ func ControlAddDebris(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		// 1. 碎片信息上主链
-		// 2. 入库
-
 		debirs := &db.Debris{
 			DebrisId:     req.DebrisId,
 			DebrisName:   req.DebrisName,
@@ -62,7 +60,9 @@ func ControlAddDebris(s *services.Server) gin.HandlerFunc {
 			ServerErrorJSONResp("get the token from context failed", c)
 			return
 		}
-		client, err := s.GetSdkClient(claims.Name)
+
+		// 碎片信息上主链
+		client, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
 		if err != nil {
 			NotInChainJSONResp(err.Error(), c)
 			return
@@ -81,15 +81,11 @@ func ControlAddDebris(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		var resp models.ContractResp
-		err = json.Unmarshal(chainResp.ContractResult.Result, &resp)
+		debirs.BlockChainField, err = GetBlockChainFiledFromResp(chainResp.ContractResult)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
 		}
-		debirs.TxId = chainResp.TxId
-		debirs.BlockHeight = resp.BlockHeight
-		debirs.ChainTime = resp.ChainTime
 
 		err = s.InsertOneObjertToDB(debirs)
 		if err != nil {
@@ -278,7 +274,7 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 			ParamsValueJSONResp("debirs type not as expected", c)
 			return
 		}
-
+		//------------------------------------------------------------------------------------------------
 		// 2. 自主规避
 		// - 碎片信息录入
 		// - 构造星座链交易，发送至星座链，等待上链成功
@@ -297,14 +293,233 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 			Volunme:    req.Volume,
 			Type:       debrisType,
 			BlockChainField: db.BlockChainField{
-				ChainId: "testchain",
+				ChainId: s.GetExecChainId(),
 			},
 		}
 
+		token, ok1 := c.Get("token")
+		claims, ok2 := token.(*services.MyClaims)
+		if !ok1 || !ok2 {
+			ServerErrorJSONResp("get the token from context failed", c)
+			return
+		}
+
+		// 碎片信息和指令信息上星座链
+		execClient, err := s.GetSdkClient(claims.Name + s.GetExecChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
+		kvs := contract.DebrisConvert(debirs)
+		edr, err := execClient.InvokeContract(s.GetExecContractName(),
+			contract.EXEC_CONTRACT_FUNC_NAME_GEN_INSTRUCTION, "", kvs, -1, true)
+		if err != nil {
+			PutChainFailJSONResp(err.Error(), c)
+			return
+		}
+		if edr.Code != common.TxStatusCode_SUCCESS {
+			PutChainFailJSONResp(edr.Message, c)
+			return
+		}
+
+		var irs *models.InstructionContractResp
+		err = json.Unmarshal(edr.ContractResult.Result, &irs)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		debirs.BlockHeight = irs.BlockHeight
+		debirs.TxId = irs.TxId
+		debirs.ChainTime = irs.ChainTime
+
+		// 碎片信息入库
 		err = s.InsertOneObjertToDB(debirs)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
+		}
+
+		instructions := contract.InstructionContractRespConvert(irs,
+			claims.Name, s.GetExecChainId())
+
+		// 指令信息入库
+		err = s.InsertObjectsToDB(instructions)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		masterClient, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
+		// 碎片信息和指令信息上主链
+		go func() {
+			mdr, err := masterClient.InvokeContract(s.GetMasterContractName(),
+				contract.MASTER_CONTRACT_FUNC_NAME_PUT_DEBRIS, "", kvs, -1, true)
+			if err != nil {
+				s.GetSuLogger().Warn(err)
+				return
+			}
+			if mdr.Code != common.TxStatusCode_SUCCESS {
+				s.GetSuLogger().Warnf("invoke contract failed: tx status code: [%d], msg: [%s]\n",
+					mdr.Code, mdr.Message)
+				return
+			}
+
+			for _, v := range instructions {
+				kvs := contract.InstructionConvert(v)
+				mir, err := masterClient.InvokeContract(s.GetMasterContractName(),
+					contract.MASTER_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, "", kvs, -1, true)
+				if err != nil {
+					s.GetSuLogger().Warn(err)
+					return
+				}
+				if mir.Code != common.TxStatusCode_SUCCESS {
+					s.GetSuLogger().Warnf("invoke contract failed: tx status code: [%d], msg: [%s]\n",
+						mir.Code, mir.Message)
+					return
+				}
+			}
+		}()
+
+		for _, v := range instructions {
+			// 开始执行指令信息上星座链
+			v.ExecState = db.INEXEC
+			v.ExecInstructionTime = time.Now().Unix()
+			kvs := contract.InstructionConvert(v)
+			eir, err := execClient.InvokeContract(s.GetExecContractName(),
+				contract.EXEC_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, "", kvs, -1, true)
+			if err != nil {
+				PutChainFailJSONResp(err.Error(), c)
+				return
+			}
+			if eir.Code != common.TxStatusCode_SUCCESS {
+				PutChainFailJSONResp(eir.Message, c)
+				return
+			}
+
+			v.BlockChainField, err = GetBlockChainFiledFromResp(eir.ContractResult)
+			if err != nil {
+				ServerErrorJSONResp(err.Error(), c)
+				return
+			}
+
+			// 开始执行指令信息上主链
+			go func() {
+				mir, err := masterClient.InvokeContract(s.GetMasterContractName(),
+					contract.MASTER_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, "", kvs, -1, true)
+				if err != nil {
+					s.GetSuLogger().Warn(err)
+					return
+				}
+				if mir.Code != common.TxStatusCode_SUCCESS {
+					s.GetSuLogger().Warnf("invoke contract failed: tx status code: [%d], msg: [%s]\n",
+						mir.Code, mir.Message)
+					return
+				}
+			}()
+
+			// 开始执行指令信息入库
+			err = s.InsertOneObjertToDB(v)
+			if err != nil {
+				ServerErrorJSONResp(err.Error(), c)
+				return
+			}
+
+			// 执行结果上星座链
+			v.ExecState = db.EXECSUCCESS
+			kvs = contract.InstructionConvert(v)
+			eir, err = execClient.InvokeContract(s.GetExecContractName(),
+				contract.EXEC_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, "", kvs, -1, true)
+			if err != nil {
+				PutChainFailJSONResp(err.Error(), c)
+				return
+			}
+			if eir.Code != common.TxStatusCode_SUCCESS {
+				PutChainFailJSONResp(eir.Message, c)
+				return
+			}
+			v.BlockChainField, err = GetBlockChainFiledFromResp(eir.ContractResult)
+			if err != nil {
+				ServerErrorJSONResp(err.Error(), c)
+				return
+			}
+
+			// 执行结果上主链
+			go func() {
+				mir, err := masterClient.InvokeContract(s.GetMasterContractName(),
+					contract.MASTER_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, "", kvs, -1, true)
+				if err != nil {
+					s.GetSuLogger().Warn(err)
+					return
+				}
+				if mir.Code != common.TxStatusCode_SUCCESS {
+					s.GetSuLogger().Warnf("invoke contract failed: tx status code: [%d], msg: [%s]\n",
+						mir.Code, mir.Message)
+					return
+				}
+			}()
+
+			// 执行结果入库
+			err = s.InsertOneObjertToDB(v)
+			if err != nil {
+				ServerErrorJSONResp(err.Error(), c)
+				return
+			}
+
+			// 执行指令操作上星座链
+			operation := &db.Operation{
+				Operator:        claims.Name,
+				OperatorIp:      c.ClientIP(),
+				OperationTime:   v.ExecInstructionTime,
+				OperationRecord: "执行指令：" + v.InstructionId,
+				SatelliteId:     v.SatelliteId,
+				SatelliteName:   v.SatelliteName,
+				BlockChainField: db.BlockChainField{
+					ChainId: s.GetExecChainId(),
+				},
+			}
+			kvs = contract.OperationConvert(operation)
+			eor, err := execClient.InvokeContract(s.GetExecContractName(),
+				contract.EXEC_CONTRACT_FUNC_NAME_PUT_OPERATION, "", kvs, -1, true)
+			if err != nil {
+				PutChainFailJSONResp(err.Error(), c)
+				return
+			}
+			if eor.Code != common.TxStatusCode_SUCCESS {
+				PutChainFailJSONResp(eor.Message, c)
+				return
+			}
+			operation.BlockChainField, err = GetBlockChainFiledFromResp(eor.ContractResult)
+			if err != nil {
+				ServerErrorJSONResp(err.Error(), c)
+				return
+			}
+
+			// 执行指令操作上主链
+			go func() {
+				mor, err := masterClient.InvokeContract(s.GetMasterContractName(),
+					contract.MASTER_CONTRACT_FUNC_NAME_PUT_OPERATION, "", kvs, -1, true)
+				if err != nil {
+					s.GetSuLogger().Warn(err)
+					return
+				}
+				if mor.Code != common.TxStatusCode_SUCCESS {
+					s.GetSuLogger().Warnf("invoke contract failed: tx status code: [%d], msg: [%s]\n",
+						mor.Code, mor.Message)
+					return
+				}
+			}()
+
+			if err := s.InsertOneObjertToDB(operation); err != nil {
+				ServerErrorJSONResp(err.Error(), c)
+				return
+			}
 		}
 
 		SuccessfulJSONResp("", c)

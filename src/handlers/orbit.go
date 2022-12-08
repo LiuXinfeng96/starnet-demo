@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"starnet-demo/src/contract"
 	"starnet-demo/src/db"
 	"starnet-demo/src/models"
 	"starnet-demo/src/services"
 	"strconv"
 
+	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,6 +41,40 @@ func ControlAddOrbit(s *services.Server) gin.HandlerFunc {
 			OrbitAngle:             req.OrbitAngle,
 			AscendingNodeLongitude: req.AscendingNodeLongitude,
 			Perigee:                req.Perigee,
+			BlockChainField: db.BlockChainField{
+				ChainId: s.GetMasterChainId(),
+			},
+		}
+
+		token, ok1 := c.Get("token")
+		claims, ok2 := token.(*services.MyClaims)
+		if !ok1 || !ok2 {
+			ServerErrorJSONResp("get the token from context failed", c)
+			return
+		}
+		client, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
+		kvs := contract.OrbitConvert(orbit)
+
+		chainResp, err := client.InvokeContract(s.GetMasterContractName(),
+			contract.MASTER_CONTRACT_FUNC_NAME_PUT_ORBIT, "", kvs, -1, true)
+		if err != nil {
+			PutChainFailJSONResp(err.Error(), c)
+			return
+		}
+		if chainResp.Code != common.TxStatusCode_SUCCESS {
+			PutChainFailJSONResp(chainResp.Message, c)
+			return
+		}
+
+		orbit.BlockChainField, err = GetBlockChainFiledFromResp(chainResp.ContractResult)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
 		}
 
 		err = s.InsertOneObjertToDB(orbit)

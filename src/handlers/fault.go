@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"starnet-demo/src/contract"
 	"starnet-demo/src/db"
 	"starnet-demo/src/models"
@@ -54,7 +53,7 @@ func ExecAddFault(s *services.Server) gin.HandlerFunc {
 			ServerErrorJSONResp("get the token from context failed", c)
 			return
 		}
-		client, err := s.GetSdkClient(claims.Name)
+		client, err := s.GetSdkClient(claims.Name + s.GetExecChainId())
 		if err != nil {
 			NotInChainJSONResp(err.Error(), c)
 			return
@@ -73,15 +72,30 @@ func ExecAddFault(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		var resp models.ContractResp
-		err = json.Unmarshal(chainResp.ContractResult.Result, &resp)
+		fault.BlockChainField, err = GetBlockChainFiledFromResp(chainResp.ContractResult)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
 		}
-		fault.TxId = chainResp.TxId
-		fault.BlockHeight = resp.BlockHeight
-		fault.ChainTime = resp.ChainTime
+
+		go func() {
+			masterClient, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
+			if err != nil {
+				s.GetSuLogger().Warn(err)
+				return
+			}
+			resp, err := masterClient.InvokeContract(s.GetMasterContractName(),
+				contract.MASTER_CONTRACT_FUNC_NAME_PUT_FAULT, "", kvs, -1, true)
+			if err != nil {
+				s.GetSuLogger().Warn(err)
+				return
+			}
+			if resp.Code != common.TxStatusCode_SUCCESS {
+				s.GetSuLogger().Warnf("invoke contract failed: tx status code: [%d], msg: [%s]\n",
+					resp.Code, resp.Message)
+				return
+			}
+		}()
 
 		err = s.InsertOneObjertToDB(fault)
 		if err != nil {

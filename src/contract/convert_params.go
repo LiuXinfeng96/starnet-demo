@@ -2,6 +2,7 @@ package contract
 
 import (
 	"starnet-demo/src/db"
+	"starnet-demo/src/models"
 	"strconv"
 
 	"chainmaker.org/chainmaker/pb-go/v2/common"
@@ -306,4 +307,29 @@ func NetStateConvert(ns *db.NetState) []*common.KeyValuePair {
 		},
 	)
 	return params
+}
+
+func InstructionContractRespConvert(icp *models.InstructionContractResp, source, chainId string) []*db.Instruction {
+	models := make([]*db.Instruction, 0)
+	for _, v := range icp.Instructions {
+		models = append(models, &db.Instruction{
+			InstructionId:      v.InstructionId,
+			InstructionContent: v.InstructionContent,
+			Type:               db.AUTOMATIC,
+			InstructionSource:  source,
+			DebrisId:           v.DebrisId,
+			DebrisName:         v.DebrisName,
+			SatelliteId:        v.SatelliteId,
+			SatelliteName:      v.SatelliteName,
+			GenInstructionTime: v.GenInstructionTime,
+			ExecState:          db.NOTEXEC,
+			BlockChainField: db.BlockChainField{
+				ChainId:     chainId,
+				BlockHeight: icp.BlockHeight,
+				TxId:        icp.TxId,
+				ChainTime:   icp.ChainTime,
+			},
+		})
+	}
+	return models
 }
