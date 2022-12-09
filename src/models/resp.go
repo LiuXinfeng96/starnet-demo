@@ -256,3 +256,26 @@ type CommStateHistoryInfo struct {
 	CommStateInfo
 	HistoryRespInfo
 }
+
+type AllState struct {
+	FaultState         bool `json:"faultState"`
+	SatelliteState     bool `json:"satelliteState"`
+	ConstellationState bool `json:"constellationState"`
+	NetState           bool `json:"netState"`
+	CommState          bool `json:"commState"`
+}
+
+type ChainDataNum struct {
+	DebrisNum         int32 `json:"debrisNum"`
+	InstructionNum    int32 `json:"instructionNum"`
+	ExecResultNum     int32 `json:"execResultNum"`
+	SatelliteStateNum int32 `json:"satelliteStateNum"`
+	OrbitNum          int32 `json:"orbitNum"`
+	ConstellationNum  int32 `json:"constellationNum"`
+	ControlNum        int32 `json:"controlNum"`
+	FaultNum          int32 `json:"faultNum"`
+	NetStateNum       int32 `json:"netStateNum"`
+	CommStateNum      int32 `json:"commStateNum"`
+	OperationNum      int32 `json:"operationNum"`
+	LoginLogNum       int32 `json:"loginLogNum"`
+}
