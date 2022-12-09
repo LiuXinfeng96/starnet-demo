@@ -219,3 +219,12 @@ func (s *Server) QueryLatestObjectsWithPage(params *QueryLatestObjectsParams) (*
 		return nil, err
 	}
 }
+
+func (s *Server) UpdateObject(modelStruc interface{}) error {
+	if err := s.gormDb.Model(modelStruc).Updates(modelStruc).Error; err != nil {
+		s.sulog.Infof("updates object failed, err:[%s]\n",
+			err.Error())
+		return err
+	}
+	return nil
+}

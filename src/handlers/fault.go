@@ -7,7 +7,6 @@ import (
 	"starnet-demo/src/services"
 	"strconv"
 
-	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -47,61 +46,38 @@ func ExecAddFault(s *services.Server) gin.HandlerFunc {
 			},
 		}
 
+		err = s.InsertOneObjertToDB(fault)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+
 		token, ok1 := c.Get("token")
 		claims, ok2 := token.(*services.MyClaims)
 		if !ok1 || !ok2 {
 			ServerErrorJSONResp("get the token from context failed", c)
 			return
 		}
-		client, err := s.GetSdkClient(claims.Name + s.GetExecChainId())
+		execClient, err := s.GetSdkClient(claims.Name + s.GetExecChainId())
 		if err != nil {
 			NotInChainJSONResp(err.Error(), c)
 			return
 		}
 
 		kvs := contract.FaultConvert(fault)
+		go s.SendTxToBlockChain(s.GetExecContractName(),
+			contract.EXEC_CONTRACT_FUNC_NAME_PUT_FAULT, execClient,
+			kvs, fault, &fault.BlockChainField)
 
-		chainResp, err := client.InvokeContract(s.GetExecContractName(),
-			contract.EXEC_CONTRACT_FUNC_NAME_PUT_FAULT, "", kvs, -1, true)
+		masterClient, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
 		if err != nil {
-			PutChainFailJSONResp(err.Error(), c)
-			return
-		}
-		if chainResp.Code != common.TxStatusCode_SUCCESS {
-			PutChainFailJSONResp(chainResp.Message, c)
+			s.GetSuLogger().Warn(err)
 			return
 		}
 
-		fault.BlockChainField, err = GetBlockChainFiledFromResp(chainResp.ContractResult)
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
-
-		go func() {
-			masterClient, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
-			if err != nil {
-				s.GetSuLogger().Warn(err)
-				return
-			}
-			resp, err := masterClient.InvokeContract(s.GetMasterContractName(),
-				contract.MASTER_CONTRACT_FUNC_NAME_PUT_FAULT, "", kvs, -1, true)
-			if err != nil {
-				s.GetSuLogger().Warn(err)
-				return
-			}
-			if resp.Code != common.TxStatusCode_SUCCESS {
-				s.GetSuLogger().Warnf("invoke contract failed: tx status code: [%d], msg: [%s]\n",
-					resp.Code, resp.Message)
-				return
-			}
-		}()
-
-		err = s.InsertOneObjertToDB(fault)
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
+		go s.SendTxToBlockChain(s.GetMasterContractName(),
+			contract.MASTER_CONTRACT_FUNC_NAME_PUT_FAULT, masterClient,
+			kvs, nil, nil)
 
 		SuccessfulJSONResp("", c)
 	}

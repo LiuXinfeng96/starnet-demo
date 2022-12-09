@@ -1,10 +1,14 @@
 package services
 
 import (
+	"encoding/json"
 	"errors"
 	"starnet-demo/src/db"
+	"starnet-demo/src/models"
 	"sync"
+	"time"
 
+	"chainmaker.org/chainmaker/pb-go/v2/common"
 	sdk "chainmaker.org/chainmaker/sdk-go/v2"
 	"github.com/golang/groupcache/lru"
 )
@@ -141,4 +145,59 @@ func (s *Server) GetSdkClient(userName string) (*sdk.ChainClient, error) {
 	}
 
 	return client, nil
+}
+
+func (s *Server) SendTxToBlockChain(contractName, funcName string, client *sdk.ChainClient,
+	kvs []*common.KeyValuePair, model interface{}, blockChainField *db.BlockChainField) {
+	for {
+		i := 0
+		resp, err := client.InvokeContract(contractName,
+			funcName, "", kvs, -1, true)
+		if err != nil {
+			s.GetSuLogger().Warnf("send tx to the chain failed: [%s]\n", err.Error())
+			if i < s.retryTime {
+				i++
+				s.GetSuLogger().Warnf("wait [%d]ms\n", s.retryInterval/time.Millisecond)
+				time.Sleep(s.retryInterval)
+				s.GetSuLogger().Warnf("retry send tx, time: [%d]\n", i)
+				continue
+			}
+			return
+		}
+
+		if resp.Code != common.TxStatusCode_SUCCESS {
+			s.GetSuLogger().Warnf("invoke contract failed: tx status code: [%d], msg: [%s]\n",
+				resp.Code, resp.Message)
+			return
+		}
+
+		if blockChainField != nil {
+			*blockChainField, err = getBlockChainFiledFromResp(resp.ContractResult)
+			if err != nil {
+				s.GetSuLogger().Warnf("get block chain info from contract resp failed, err: [%s], result: [%+v]",
+					err.Error(), resp.ContractResult)
+				return
+			}
+		}
+
+		if model != nil {
+			s.UpdateObject(model)
+		}
+
+		return
+	}
+
+}
+
+func getBlockChainFiledFromResp(cr *common.ContractResult) (db.BlockChainField, error) {
+	var resp models.ContractResp
+	err := json.Unmarshal(cr.Result, &resp)
+	if err != nil {
+		return db.BlockChainField{}, err
+	}
+	var bcFiled db.BlockChainField
+	bcFiled.TxId = resp.TxId
+	bcFiled.BlockHeight = resp.BlockHeight
+	bcFiled.ChainTime = resp.ChainTime
+	return bcFiled, nil
 }

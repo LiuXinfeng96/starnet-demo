@@ -2,6 +2,7 @@ package services
 
 import (
 	"starnet-demo/src/configs"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -9,12 +10,14 @@ import (
 )
 
 type Server struct {
-	ginEngine *gin.Engine
-	config    *configs.Config
-	log       *zap.Logger
-	sulog     *zap.SugaredLogger
-	gormDb    *gorm.DB
-	sdkPool   *SdkPool
+	ginEngine     *gin.Engine
+	config        *configs.Config
+	log           *zap.Logger
+	sulog         *zap.SugaredLogger
+	gormDb        *gorm.DB
+	sdkPool       *SdkPool
+	retryTime     int
+	retryInterval time.Duration
 }
 
 type Option func(s *Server)
@@ -58,6 +61,8 @@ func WithSdkPool(maxEntries int) Option {
 
 func NewServer(opts ...Option) (*Server, error) {
 	server := new(Server)
+	server.retryTime = 4
+	server.retryInterval = time.Microsecond * 1000
 	for _, opt := range opts {
 		opt(server)
 	}

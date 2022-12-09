@@ -7,7 +7,6 @@ import (
 	"starnet-demo/src/services"
 	"strconv"
 
-	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -30,9 +29,6 @@ func ControlAddOrbit(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		// 1. 轨道信息上主链
-		// 2. 入库
-
 		orbit := &db.Orbit{
 			OrbitId:                req.OrbitId,
 			OrbitType:              req.OrbitType,
@@ -44,6 +40,12 @@ func ControlAddOrbit(s *services.Server) gin.HandlerFunc {
 			BlockChainField: db.BlockChainField{
 				ChainId: s.GetMasterChainId(),
 			},
+		}
+
+		err = s.InsertOneObjertToDB(orbit)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
 		}
 
 		token, ok1 := c.Get("token")
@@ -60,28 +62,9 @@ func ControlAddOrbit(s *services.Server) gin.HandlerFunc {
 
 		kvs := contract.OrbitConvert(orbit)
 
-		chainResp, err := client.InvokeContract(s.GetMasterContractName(),
-			contract.MASTER_CONTRACT_FUNC_NAME_PUT_ORBIT, "", kvs, -1, true)
-		if err != nil {
-			PutChainFailJSONResp(err.Error(), c)
-			return
-		}
-		if chainResp.Code != common.TxStatusCode_SUCCESS {
-			PutChainFailJSONResp(chainResp.Message, c)
-			return
-		}
-
-		orbit.BlockChainField, err = GetBlockChainFiledFromResp(chainResp.ContractResult)
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
-
-		err = s.InsertOneObjertToDB(orbit)
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
+		go s.SendTxToBlockChain(s.GetMasterContractName(),
+			contract.MASTER_CONTRACT_FUNC_NAME_PUT_ORBIT, client,
+			kvs, orbit, &orbit.BlockChainField)
 
 		SuccessfulJSONResp("", c)
 	}

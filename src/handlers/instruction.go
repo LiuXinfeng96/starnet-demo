@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -56,33 +55,6 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 				ChainId: s.GetMasterChainId(),
 			},
 		}
-
-		// 未执行指令信息上主链
-		masterClient, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
-		if err != nil {
-			NotInChainJSONResp(err.Error(), c)
-			return
-		}
-
-		kvs := contract.InstructionConvert(instruction)
-
-		mResp, err := masterClient.InvokeContract(s.GetMasterContractName(),
-			contract.MASTER_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, "", kvs, -1, true)
-		if err != nil {
-			PutChainFailJSONResp(err.Error(), c)
-			return
-		}
-		if mResp.Code != common.TxStatusCode_SUCCESS {
-			PutChainFailJSONResp(mResp.Message, c)
-			return
-		}
-
-		instruction.BlockChainField, err = GetBlockChainFiledFromResp(mResp.ContractResult)
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
-
 		// 未执行指令信息入库
 		err = s.InsertOneObjertToDB(instruction)
 		if err != nil {
@@ -90,7 +62,18 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		// 编辑操作上主链
+		masterClient, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
+		noikvs := contract.InstructionConvert(instruction)
+		// 未执行指令信息上主链
+		go s.SendTxToBlockChain(s.GetMasterContractName(),
+			contract.MASTER_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, masterClient,
+			noikvs, instruction, &instruction.BlockChainField)
+
 		operation := &db.Operation{
 			Operator:        claims.Name,
 			OperatorIp:      c.ClientIP(),
@@ -103,25 +86,6 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			},
 		}
 
-		kvs = contract.OperationConvert(operation)
-
-		omp, err := masterClient.InvokeContract(s.GetMasterContractName(),
-			contract.MASTER_CONTRACT_FUNC_NAME_PUT_OPERATION, "", kvs, -1, true)
-		if err != nil {
-			PutChainFailJSONResp(err.Error(), c)
-			return
-		}
-		if omp.Code != common.TxStatusCode_SUCCESS {
-			PutChainFailJSONResp(omp.Message, c)
-			return
-		}
-
-		operation.BlockChainField, err = GetBlockChainFiledFromResp(omp.ContractResult)
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
-
 		// 编辑操作入库
 		err = s.InsertOneObjertToDB(operation)
 		if err != nil {
@@ -129,92 +93,43 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		// 执行指令上星座链
+		okvs := contract.OperationConvert(operation)
+
+		go s.SendTxToBlockChain(s.GetMasterContractName(),
+			contract.MASTER_CONTRACT_FUNC_NAME_PUT_OPERATION, masterClient,
+			okvs, operation, &operation.BlockChainField)
+
 		execClient, err := s.GetSdkClient(claims.Name + s.GetExecChainId())
 		if err != nil {
 			NotInChainJSONResp(err.Error(), c)
 			return
 		}
+
+		instruction.Id = 0
 		instruction.ExecState = db.INEXEC
 		instruction.ExecInstructionTime = time.Now().Unix()
-
-		kvs = contract.InstructionConvert(instruction)
-
-		eResp, err := execClient.InvokeContract(s.GetExecContractName(),
-			contract.EXEC_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, "", kvs, -1, true)
-		if err != nil {
-			PutChainFailJSONResp(err.Error(), c)
-			return
-		}
-		if eResp.Code != common.TxStatusCode_SUCCESS {
-			PutChainFailJSONResp(eResp.Message, c)
-			return
-		}
-
-		instruction.BlockChainField, err = GetBlockChainFiledFromResp(eResp.ContractResult)
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
-
-		// 执行指令上主链
-		go func() {
-			mir, err := masterClient.InvokeContract(s.GetMasterContractName(),
-				contract.MASTER_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, "", kvs, -1, true)
-			if err != nil {
-				s.GetSuLogger().Warn(err)
-				return
-			}
-			if mir.Code != common.TxStatusCode_SUCCESS {
-				s.GetSuLogger().Warnf("invoke contract failed: tx status code: [%d], msg: [%s]\n",
-					mir.Code, mir.Message)
-				return
-			}
-		}()
-
-		// 执行指令上入库
+		// 执行指令入库
 		err = s.InsertOneObjertToDB(instruction)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
 		}
 
-		// 执行结果上星座链
+		ineikvs := contract.InstructionConvert(instruction)
+		go s.SendTxToBlockChain(s.GetExecContractName(),
+			contract.EXEC_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, execClient,
+			ineikvs, instruction, &instruction.BlockChainField)
+
+		go s.SendTxToBlockChain(s.GetMasterContractName(),
+			contract.MASTER_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, masterClient,
+			ineikvs, nil, nil)
+
+		//假设执行中-------------------------------
+		time.Sleep(time.Millisecond * 500)
+		//-----------------------------------------
+
+		instruction.Id = 0
 		instruction.ExecState = db.EXECSUCCESS
-		kvs = contract.InstructionConvert(instruction)
-
-		eir, err := execClient.InvokeContract(s.GetExecContractName(),
-			contract.EXEC_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, "", kvs, -1, true)
-		if err != nil {
-			PutChainFailJSONResp(err.Error(), c)
-			return
-		}
-		if eir.Code != common.TxStatusCode_SUCCESS {
-			PutChainFailJSONResp(eir.Message, c)
-			return
-		}
-
-		instruction.BlockChainField, err = GetBlockChainFiledFromResp(eir.ContractResult)
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
-
-		// 执行结果上主链
-		go func() {
-			mir, err := masterClient.InvokeContract(s.GetMasterContractName(),
-				contract.MASTER_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, "", kvs, -1, true)
-			if err != nil {
-				s.GetSuLogger().Warn(err)
-				return
-			}
-			if mir.Code != common.TxStatusCode_SUCCESS {
-				s.GetSuLogger().Warnf("invoke contract failed: tx status code: [%d], msg: [%s]\n",
-					mir.Code, mir.Message)
-				return
-			}
-		}()
-
 		// 执行结果入库
 		err = s.InsertOneObjertToDB(instruction)
 		if err != nil {
@@ -222,7 +137,18 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		// 执行操作上星座链
+		rikvs := contract.InstructionConvert(instruction)
+
+		// 执行结果上星座链
+		go s.SendTxToBlockChain(s.GetExecContractName(),
+			contract.EXEC_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, execClient,
+			rikvs, instruction, &instruction.BlockChainField)
+
+		// 执行结果上主链
+		go s.SendTxToBlockChain(s.GetMasterContractName(),
+			contract.MASTER_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, masterClient,
+			rikvs, nil, nil)
+
 		operation = &db.Operation{
 			Operator:        "卫星执行系统",
 			OperationTime:   genInstructionTime,
@@ -234,46 +160,23 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			},
 		}
 
-		kvs = contract.OperationConvert(operation)
-
-		oep, err := execClient.InvokeContract(s.GetExecContractName(),
-			contract.EXEC_CONTRACT_FUNC_NAME_PUT_OPERATION, "", kvs, -1, true)
-		if err != nil {
-			PutChainFailJSONResp(err.Error(), c)
-			return
-		}
-		if oep.Code != common.TxStatusCode_SUCCESS {
-			PutChainFailJSONResp(oep.Message, c)
-			return
-		}
-
-		operation.BlockChainField, err = GetBlockChainFiledFromResp(oep.ContractResult)
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
-
-		// 执行操作上主链
-		go func() {
-			mor, err := masterClient.InvokeContract(s.GetMasterContractName(),
-				contract.MASTER_CONTRACT_FUNC_NAME_PUT_OPERATION, "", kvs, -1, true)
-			if err != nil {
-				s.GetSuLogger().Warn(err)
-				return
-			}
-			if mor.Code != common.TxStatusCode_SUCCESS {
-				s.GetSuLogger().Warnf("invoke contract failed: tx status code: [%d], msg: [%s]\n",
-					mor.Code, mor.Message)
-				return
-			}
-		}()
-
 		// 执行操作入库
 		err = s.InsertOneObjertToDB(operation)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
 		}
+
+		opkvs := contract.OperationConvert(operation)
+		// 执行操作上星座链
+		go s.SendTxToBlockChain(s.GetExecContractName(),
+			contract.EXEC_CONTRACT_FUNC_NAME_PUT_OPERATION, execClient,
+			opkvs, operation, &operation.BlockChainField)
+
+		// 执行操作上主链
+		go s.SendTxToBlockChain(s.GetMasterContractName(),
+			contract.MASTER_CONTRACT_FUNC_NAME_PUT_OPERATION, masterClient,
+			opkvs, nil, nil)
 
 		SuccessfulJSONResp("", c)
 	}

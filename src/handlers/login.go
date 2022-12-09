@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -69,11 +68,6 @@ func Login(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		// 记录登录日志
-
-		// 1. 上链
-		// 2. 存到数据库
-
 		loginLog := &db.LoginLog{
 			UserName:  user.UserName,
 			LoginIp:   c.ClientIP(),
@@ -81,6 +75,12 @@ func Login(s *services.Server) gin.HandlerFunc {
 			BlockChainField: db.BlockChainField{
 				ChainId: s.GetMasterChainId(),
 			},
+		}
+
+		err = s.InsertOneObjertToDB(loginLog)
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
 		}
 
 		client, err := s.GetSdkClient(user.UserName + s.GetMasterChainId())
@@ -91,28 +91,9 @@ func Login(s *services.Server) gin.HandlerFunc {
 
 		kvs := contract.LoginLogConvert(loginLog)
 
-		chainResp, err := client.InvokeContract(s.GetMasterContractName(),
-			contract.MASTER_CONTRACT_FUNC_NAME_PUT_LOGINLOG, "", kvs, -1, true)
-		if err != nil {
-			PutChainFailJSONResp(err.Error(), c)
-			return
-		}
-		if chainResp.Code != common.TxStatusCode_SUCCESS {
-			PutChainFailJSONResp(chainResp.Message, c)
-			return
-		}
-
-		loginLog.BlockChainField, err = GetBlockChainFiledFromResp(chainResp.ContractResult)
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
-
-		err = s.InsertOneObjertToDB(loginLog)
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
+		go s.SendTxToBlockChain(s.GetMasterContractName(),
+			contract.MASTER_CONTRACT_FUNC_NAME_PUT_LOGINLOG, client,
+			kvs, loginLog, &loginLog.BlockChainField)
 
 		SuccessfulJSONResp(&models.LoginInfo{
 			UserNickName: user.UserNickName,
