@@ -266,16 +266,40 @@ type AllState struct {
 }
 
 type ChainDataNum struct {
-	DebrisNum         int32 `json:"debrisNum"`
-	InstructionNum    int32 `json:"instructionNum"`
-	ExecResultNum     int32 `json:"execResultNum"`
-	SatelliteStateNum int32 `json:"satelliteStateNum"`
-	OrbitNum          int32 `json:"orbitNum"`
-	ConstellationNum  int32 `json:"constellationNum"`
-	ControlNum        int32 `json:"controlNum"`
-	FaultNum          int32 `json:"faultNum"`
-	NetStateNum       int32 `json:"netStateNum"`
-	CommStateNum      int32 `json:"commStateNum"`
-	OperationNum      int32 `json:"operationNum"`
-	LoginLogNum       int32 `json:"loginLogNum"`
+	DebrisNum         int64 `json:"debrisNum"`
+	InstructionNum    int64 `json:"instructionNum"`
+	SatelliteStateNum int64 `json:"satelliteStateNum"`
+	OrbitNum          int64 `json:"orbitNum"`
+	ConstellationNum  int64 `json:"constellationNum"`
+	ControlNum        int64 `json:"controlNum"`
+	FaultNum          int64 `json:"faultNum"`
+	NetStateNum       int64 `json:"netStateNum"`
+	CommStateNum      int64 `json:"commStateNum"`
+	OperationNum      int64 `json:"operationNum"`
+	LoginLogNum       int64 `json:"loginLogNum"`
+}
+
+type FaultTypeInfo struct {
+	AType int64 `json:"atype"`
+	BType int64 `json:"btype"`
+	CType int64 `json:"ctype"`
+	DType int64 `json:"dtype"`
+	EType int64 `json:"etype"`
+}
+
+type EarlyWarningInfo struct {
+	DebrisId      string  `json:"debrisId"`
+	DebrisName    string  `json:"debrisName"`
+	Speed         float64 `json:"speed"`
+	Height        float64 `json:"height"`
+	Threaten      int32   `json:"threaten"`
+	SatelliteName string  `json:"satelliteName"`
+	SatelliteId   string  `json:"satelliteId"`
+}
+
+type ChainInfo struct {
+	NodeNum     int32  `json:"nodeNum"`
+	BlockHeight int32  `json:"blockHeight"`
+	ChainName   string `json:"chainName"`
+	TxNum       int32  `json:"txNum"`
 }

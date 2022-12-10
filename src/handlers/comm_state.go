@@ -30,11 +30,17 @@ func ExecAddCommState(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
+		state, ok := db.StateValue[req.CommState]
+		if !ok {
+			ParamsValueJSONResp("comm state type not as expected", c)
+			return
+		}
+
 		commState := &db.CommState{
 			SatelliteId:   req.SatelliteId,
 			SatelliteName: req.SatelliteName,
 			OrbitId:       req.OrbitId,
-			CommState:     req.CommState,
+			CommState:     state,
 			CommDelay:     req.CommDelay,
 			CommPort:      req.CommPort,
 			CommBandwidth: req.CommBandwidth,
@@ -155,7 +161,7 @@ func ExecGetCommStateList(s *services.Server) gin.HandlerFunc {
 				SatelliteId:   commState.SatelliteId,
 				SatelliteName: commState.SatelliteName,
 				OrbitId:       commState.OrbitId,
-				CommState:     commState.CommState,
+				CommState:     db.StateName[commState.CommState],
 				CommPort:      commState.CommPort,
 				CommDelay:     commState.CommDelay,
 				CommBandwidth: commState.CommBandwidth,
@@ -211,7 +217,7 @@ func TraceGetCommetState(s *services.Server) gin.HandlerFunc {
 					SatelliteId:   commState.SatelliteId,
 					SatelliteName: commState.SatelliteName,
 					OrbitId:       commState.OrbitId,
-					CommState:     commState.CommState,
+					CommState:     db.StateName[commState.CommState],
 					CommPort:      commState.CommPort,
 					CommDelay:     commState.CommDelay,
 					CommBandwidth: commState.CommBandwidth,
@@ -309,7 +315,7 @@ func TraceGetCommStateList(s *services.Server) gin.HandlerFunc {
 				SatelliteId:   commState.SatelliteId,
 				SatelliteName: commState.SatelliteName,
 				OrbitId:       commState.OrbitId,
-				CommState:     commState.CommState,
+				CommState:     db.StateName[commState.CommState],
 				CommPort:      commState.CommPort,
 				CommDelay:     commState.CommDelay,
 				CommBandwidth: commState.CommBandwidth,

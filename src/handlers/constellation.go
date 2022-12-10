@@ -30,13 +30,19 @@ func ControlAddConstellation(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
+		satelliteLinkState, ok := db.StateValue[req.SatelliteLinkState]
+		if !ok {
+			ParamsValueJSONResp("satellite link state type not as expected", c)
+			return
+		}
+
 		// 1. 星座信息上主链
 		// 2. 入库
 
 		constellation := &db.Constellation{
 			ConstellationId:    req.ConstellationId,
 			ConstellationName:  req.ConstellationName,
-			SatelliteLinkState: req.SatelliteLinkState,
+			SatelliteLinkState: satelliteLinkState,
 			SatelliteTotalNum:  req.SatelliteTotalNum,
 			SatelliteUpNum:     req.SatelliteUpNum,
 			SatelliteDownNum:   req.SatelliteDownNum,
@@ -144,7 +150,7 @@ func ControlGetConstellationList(s *services.Server) gin.HandlerFunc {
 			resp = append(resp, &models.ConstellationInfo{
 				ConstellationId:    constellation.ConstellationId,
 				ConstellationName:  constellation.ConstellationName,
-				SatelliteLinkState: constellation.SatelliteLinkState,
+				SatelliteLinkState: db.StateName[constellation.SatelliteLinkState],
 				SatelliteTotalNum:  constellation.SatelliteTotalNum,
 				SatelliteUpNum:     constellation.SatelliteUpNum,
 				SatelliteDownNum:   constellation.SatelliteDownNum,
@@ -198,7 +204,7 @@ func TraceGetConstellation(s *services.Server) gin.HandlerFunc {
 				ConstellationInfo: models.ConstellationInfo{
 					ConstellationId:    constellation.ConstellationId,
 					ConstellationName:  constellation.ConstellationName,
-					SatelliteLinkState: constellation.SatelliteLinkState,
+					SatelliteLinkState: db.StateName[constellation.SatelliteLinkState],
 					SatelliteTotalNum:  constellation.SatelliteTotalNum,
 					SatelliteUpNum:     constellation.SatelliteUpNum,
 					SatelliteDownNum:   constellation.SatelliteDownNum,
@@ -293,7 +299,7 @@ func TraceGetConstellationList(s *services.Server) gin.HandlerFunc {
 			resp = append(resp, &models.ConstellationInfo{
 				ConstellationId:    constellation.ConstellationId,
 				ConstellationName:  constellation.ConstellationName,
-				SatelliteLinkState: constellation.SatelliteLinkState,
+				SatelliteLinkState: db.StateName[constellation.SatelliteLinkState],
 				SatelliteTotalNum:  constellation.SatelliteTotalNum,
 				SatelliteUpNum:     constellation.SatelliteUpNum,
 				SatelliteDownNum:   constellation.SatelliteDownNum,

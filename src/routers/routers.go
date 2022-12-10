@@ -121,9 +121,13 @@ func LoadTraceRouter(s *services.Server) {
 	}
 }
 
-// func LoadMonitorRouter(s *services.Server) {
-// 	routerGroup := s.GetGinEngine().Group(ROUTERS_MONITOR)
-// 	{
-
-// 	}
-// }
+func LoadMonitorRouter(s *services.Server) {
+	routerGroup := s.GetGinEngine().Group(ROUTERS_MONITOR)
+	{
+		routerGroup.GET("/getstate", handlers.MonitorGetAllState(s))
+		routerGroup.GET("/getchaindatanum", handlers.MonitorGetTableCount(s))
+		routerGroup.GET("/getfaultinfo", handlers.MonitorGetFaultInfo(s))
+		routerGroup.GET("/getearlywarning", handlers.TraceGetCommStateList(s))
+		routerGroup.GET("/getchaininfo", handlers.TraceGetCommetState(s))
+	}
+}

@@ -127,7 +127,7 @@ func ConstellationConvert(conl *db.Constellation) []*common.KeyValuePair {
 			Value: []byte(strconv.Itoa(int(conl.SatelliteDownNum))),
 		}, &common.KeyValuePair{
 			Key:   "satelliteLinkState",
-			Value: []byte(conl.SatelliteLinkState),
+			Value: []byte(db.StateName[conl.SatelliteLinkState]),
 		},
 	)
 	return params
@@ -193,7 +193,7 @@ func SatelliteConvert(sate *db.Satellite) []*common.KeyValuePair {
 			Value: []byte(strconv.FormatFloat(sate.Speed, 'f', 10, 64)),
 		}, &common.KeyValuePair{
 			Key:   "runState",
-			Value: []byte(db.SatelliteRunStateName[sate.RunState]),
+			Value: []byte(db.StateName[sate.RunState]),
 		},
 	)
 	return params
@@ -236,7 +236,7 @@ func FaultConvert(fault *db.Fault) []*common.KeyValuePair {
 			Value: []byte(fault.OrbitId),
 		}, &common.KeyValuePair{
 			Key:   "faultType",
-			Value: []byte(fault.FaultType),
+			Value: []byte(db.FaultTypeName[fault.FaultType]),
 		}, &common.KeyValuePair{
 			Key:   "faultTime",
 			Value: []byte(strconv.Itoa(int(fault.FaultTime))),
@@ -245,7 +245,7 @@ func FaultConvert(fault *db.Fault) []*common.KeyValuePair {
 			Value: []byte(fault.FaultDescription),
 		}, &common.KeyValuePair{
 			Key:   "repairState",
-			Value: []byte(fault.RepairState),
+			Value: []byte(db.StateName[fault.RepairState]),
 		},
 	)
 	return params
@@ -265,7 +265,7 @@ func CommStateConvert(cs *db.CommState) []*common.KeyValuePair {
 			Value: []byte(cs.OrbitId),
 		}, &common.KeyValuePair{
 			Key:   "commState",
-			Value: []byte(cs.CommState),
+			Value: []byte(db.StateName[cs.CommState]),
 		}, &common.KeyValuePair{
 			Key:   "commPort",
 			Value: []byte(cs.CommPort),
@@ -300,7 +300,7 @@ func NetStateConvert(ns *db.NetState) []*common.KeyValuePair {
 			Value: []byte(ns.NetworkSegment),
 		}, &common.KeyValuePair{
 			Key:   "networkState",
-			Value: []byte(ns.NetworkState),
+			Value: []byte(db.StateName[ns.NetworkState]),
 		}, &common.KeyValuePair{
 			Key:   "networkBandwidth",
 			Value: []byte(ns.NetworkBandwidth),
@@ -319,6 +319,7 @@ func InstructionContractRespConvert(icp *models.InstructionContractResp, source,
 			InstructionSource:  source,
 			DebrisId:           v.DebrisId,
 			DebrisName:         v.DebrisName,
+			Treaten:            db.ThreatDegreeValue[v.Treaten],
 			SatelliteId:        v.SatelliteId,
 			SatelliteName:      v.SatelliteName,
 			GenInstructionTime: v.GenInstructionTime,

@@ -30,7 +30,7 @@ func ExecAddSatelliteState(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		runState, ok := db.SatelliteRunStateValue[req.RunState]
+		runState, ok := db.StateValue[req.RunState]
 		if !ok {
 			ParamsValueJSONResp("run state type not as expected", c)
 			return
@@ -158,7 +158,7 @@ func ExecGetSatelliteStateList(s *services.Server) gin.HandlerFunc {
 				SatelliteId:   satellite.SatelliteId,
 				SatelliteName: satellite.SatelliteName,
 				OrbitId:       satellite.OrbitId,
-				RunState:      db.SatelliteRunStateName[satellite.RunState],
+				RunState:      db.StateName[satellite.RunState],
 				MeanAnomaly:   satellite.MeanAnomaly,
 				Speed:         satellite.Speed,
 				BaseRespInfo: models.BaseRespInfo{
@@ -212,7 +212,7 @@ func TraceGetSatelliteState(s *services.Server) gin.HandlerFunc {
 					SatelliteId:   satellite.SatelliteId,
 					SatelliteName: satellite.SatelliteName,
 					OrbitId:       satellite.OrbitId,
-					RunState:      db.SatelliteRunStateName[satellite.RunState],
+					RunState:      db.StateName[satellite.RunState],
 					MeanAnomaly:   satellite.MeanAnomaly,
 					Speed:         satellite.Speed,
 					BaseRespInfo: models.BaseRespInfo{
@@ -308,7 +308,7 @@ func TraceGetSatelliteStateList(s *services.Server) gin.HandlerFunc {
 				SatelliteId:   satellite.SatelliteId,
 				SatelliteName: satellite.SatelliteName,
 				OrbitId:       satellite.OrbitId,
-				RunState:      db.SatelliteRunStateName[satellite.RunState],
+				RunState:      db.StateName[satellite.RunState],
 				MeanAnomaly:   satellite.MeanAnomaly,
 				Speed:         satellite.Speed,
 				BaseRespInfo: models.BaseRespInfo{

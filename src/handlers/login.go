@@ -83,7 +83,7 @@ func Login(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		client, err := s.GetSdkClient(user.UserName + s.GetMasterChainId())
+		client, err := s.GetSdkClient(s.GetMasterChainUserName() + s.GetMasterChainId())
 		if err != nil {
 			NotInChainJSONResp(err.Error(), c)
 			return

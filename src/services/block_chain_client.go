@@ -147,8 +147,12 @@ func (s *Server) GetSdkClient(userName string) (*sdk.ChainClient, error) {
 	return client, nil
 }
 
+func (s *Server) GetMasterChainUserName() string {
+	return s.config.BCConfig[0].UserName
+}
+
 func (s *Server) SendTxToBlockChain(contractName, funcName string, client *sdk.ChainClient,
-	kvs []*common.KeyValuePair, model interface{}, blockChainField *db.BlockChainField) {
+	kvs []*common.KeyValuePair, model db.ModelStruct, blockChainField *db.BlockChainField) {
 	for {
 		i := 0
 		resp, err := client.InvokeContract(contractName,

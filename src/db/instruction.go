@@ -59,6 +59,32 @@ var ExecStateValue = map[string]InstructionExecState{
 	EXECFAIL_STR:    EXECFAIL,
 }
 
+type ThreatDegree int32
+
+const (
+	NO ThreatDegree = iota + 1
+	LOW
+	HIGH
+)
+
+const (
+	THREAT_NO_STR   = "无"
+	THREAT_LOW_STR  = "低"
+	THREAT_HIGH_STR = "高"
+)
+
+var ThreatDegreeName = map[ThreatDegree]string{
+	NO:   THREAT_NO_STR,
+	LOW:  THREAT_LOW_STR,
+	HIGH: THREAT_HIGH_STR,
+}
+
+var ThreatDegreeValue = map[string]ThreatDegree{
+	THREAT_NO_STR:   NO,
+	THREAT_LOW_STR:  LOW,
+	THREAT_HIGH_STR: HIGH,
+}
+
 type Instruction struct {
 	GeneralField
 	BlockChainField
@@ -70,6 +96,7 @@ type Instruction struct {
 	GenInstructionTime  int64
 	DebrisId            string
 	DebrisName          string
+	Treaten             ThreatDegree
 	SatelliteId         string `gorm:"index"`
 	SatelliteName       string `gorm:"index"`
 	ExecState           InstructionExecState

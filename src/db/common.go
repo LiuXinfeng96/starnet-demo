@@ -17,3 +17,25 @@ type BlockChainField struct {
 type ModelStruct interface {
 	TableName() string
 }
+
+type State int32
+
+const (
+	NORMAL State = iota + 1
+	WRONG
+)
+
+const (
+	NORMAL_STR = "正常"
+	WRONG_STR  = "异常"
+)
+
+var StateName = map[State]string{
+	NORMAL: NORMAL_STR,
+	WRONG:  WRONG_STR,
+}
+
+var StateValue = map[string]State{
+	NORMAL_STR: NORMAL,
+	WRONG_STR:  WRONG,
+}

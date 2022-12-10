@@ -74,6 +74,8 @@ func Start(s *services.Server) error {
 
 	routers.LoadTraceRouter(s)
 
+	routers.LoadMonitorRouter(s)
+
 	err := s.GetGinEngine().Run(":" + s.GetSeverPort())
 	if err != nil {
 		return err

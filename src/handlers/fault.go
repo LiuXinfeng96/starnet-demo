@@ -30,6 +30,18 @@ func ExecAddFault(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
+		repairState, ok := db.StateValue[req.RepairState]
+		if !ok {
+			ParamsValueJSONResp("repair state type not as expected", c)
+			return
+		}
+
+		faultType, ok := db.FaultTypeValue[req.FaultType]
+		if !ok {
+			ParamsValueJSONResp("fault type not as expected", c)
+			return
+		}
+
 		// 1. 故障信息上星座链
 		// 2. 入库
 
@@ -37,10 +49,10 @@ func ExecAddFault(s *services.Server) gin.HandlerFunc {
 			SatelliteId:      req.SatelliteId,
 			SatelliteName:    req.SatelliteName,
 			OrbitId:          req.OrbitId,
-			FaultType:        req.FaultType,
+			FaultType:        faultType,
 			FaultDescription: req.FaultDescription,
 			FaultTime:        req.FaultTime,
-			RepairState:      req.RepairState,
+			RepairState:      repairState,
 			BlockChainField: db.BlockChainField{
 				ChainId: s.GetExecChainId(),
 			},
@@ -155,10 +167,10 @@ func ExecGetFaultList(s *services.Server) gin.HandlerFunc {
 				SatelliteId:      fault.SatelliteId,
 				SatelliteName:    fault.SatelliteName,
 				OrbitId:          fault.OrbitId,
-				FaultType:        fault.FaultType,
+				FaultType:        db.FaultTypeName[fault.FaultType],
 				FaultDescription: fault.FaultDescription,
 				FaultTime:        fault.FaultTime,
-				RepairState:      fault.RepairState,
+				RepairState:      db.StateName[fault.RepairState],
 				BaseRespInfo: models.BaseRespInfo{
 					Id:        fault.Id,
 					LastTime:  fault.LastTime,
@@ -210,10 +222,10 @@ func TraceGetFault(s *services.Server) gin.HandlerFunc {
 					SatelliteId:      fault.SatelliteId,
 					SatelliteName:    fault.SatelliteName,
 					OrbitId:          fault.OrbitId,
-					FaultType:        fault.FaultType,
+					FaultType:        db.FaultTypeName[fault.FaultType],
 					FaultDescription: fault.FaultDescription,
 					FaultTime:        fault.FaultTime,
-					RepairState:      fault.RepairState,
+					RepairState:      db.StateName[fault.RepairState],
 					BaseRespInfo: models.BaseRespInfo{
 						Id:        fault.Id,
 						LastTime:  fault.LastTime,
@@ -306,10 +318,10 @@ func TraceGetFaultList(s *services.Server) gin.HandlerFunc {
 				SatelliteId:      fault.SatelliteId,
 				SatelliteName:    fault.SatelliteName,
 				OrbitId:          fault.OrbitId,
-				FaultType:        fault.FaultType,
+				FaultType:        db.FaultTypeName[fault.FaultType],
 				FaultDescription: fault.FaultDescription,
 				FaultTime:        fault.FaultTime,
-				RepairState:      fault.RepairState,
+				RepairState:      db.StateName[fault.RepairState],
 				BaseRespInfo: models.BaseRespInfo{
 					Id:        fault.Id,
 					LastTime:  fault.LastTime,

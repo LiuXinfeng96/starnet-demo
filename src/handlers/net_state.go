@@ -29,13 +29,18 @@ func ExecAddNetState(s *services.Server) gin.HandlerFunc {
 			ParamsMissingJSONResp(err.Error(), c)
 			return
 		}
+		networkState, ok := db.StateValue[req.NetworkState]
+		if !ok {
+			ParamsValueJSONResp("network state type not as expected", c)
+			return
+		}
 
 		netState := &db.NetState{
 			SatelliteId:      req.SatelliteId,
 			SatelliteName:    req.SatelliteName,
 			OrbitId:          req.OrbitId,
 			NetworkSegment:   req.NetworkSegment,
-			NetworkState:     req.NetworkState,
+			NetworkState:     networkState,
 			NetworkBandwidth: req.NetworkBandwidth,
 			BlockChainField: db.BlockChainField{
 				ChainId: s.GetExecChainId(),
@@ -153,7 +158,7 @@ func ExecGetNetStateList(s *services.Server) gin.HandlerFunc {
 				SatelliteName:    netState.SatelliteName,
 				OrbitId:          netState.OrbitId,
 				NetworkSegment:   netState.NetworkSegment,
-				NetworkState:     netState.NetworkState,
+				NetworkState:     db.StateName[netState.NetworkState],
 				NetworkBandwidth: netState.NetworkBandwidth,
 				BaseRespInfo: models.BaseRespInfo{
 					Id:        netState.Id,
@@ -207,7 +212,7 @@ func TraceGetNetState(s *services.Server) gin.HandlerFunc {
 					SatelliteName:    netState.SatelliteName,
 					OrbitId:          netState.OrbitId,
 					NetworkSegment:   netState.NetworkSegment,
-					NetworkState:     netState.NetworkState,
+					NetworkState:     db.StateName[netState.NetworkState],
 					NetworkBandwidth: netState.NetworkBandwidth,
 					BaseRespInfo: models.BaseRespInfo{
 						Id:        netState.Id,
@@ -302,7 +307,7 @@ func TraceGetNetStateList(s *services.Server) gin.HandlerFunc {
 				SatelliteName:    netState.SatelliteName,
 				OrbitId:          netState.OrbitId,
 				NetworkSegment:   netState.NetworkSegment,
-				NetworkState:     netState.NetworkState,
+				NetworkState:     db.StateName[netState.NetworkState],
 				NetworkBandwidth: netState.NetworkBandwidth,
 				BaseRespInfo: models.BaseRespInfo{
 					Id:        netState.Id,

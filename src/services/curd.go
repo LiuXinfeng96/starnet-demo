@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"starnet-demo/src/db"
+
+	"gorm.io/gorm"
 )
 
 const DEFAULT_BATCHES_SIZE = 1000
@@ -27,7 +29,7 @@ var SortTypeValue = map[string]SortType{
 }
 
 type QueryObjectsParams struct {
-	ModelStruct interface{}
+	ModelStruct db.ModelStruct
 	Page        int32
 	PageSize    int32
 	SortType    SortType
@@ -46,7 +48,11 @@ type QueryLatestObjectsParams struct {
 	GroupIndex  string
 }
 
-func (s *Server) InsertOneObjertToDB(object interface{}) error {
+func (s *Server) GetGormObject() *gorm.DB {
+	return s.gormDb
+}
+
+func (s *Server) InsertOneObjertToDB(object db.ModelStruct) error {
 	if err := s.gormDb.Create(object).Error; err != nil {
 		s.sulog.Infof("insert one object to db failed, err:[%s], object: [%+v]\n",
 			err.Error(), object)
@@ -133,7 +139,7 @@ func (s *Server) QueryObjectsWithPageSC(params *QueryObjectsParams) (*sql.Rows, 
 	}
 }
 
-func (s *Server) ScanRows(rows *sql.Rows, object interface{}) error {
+func (s *Server) ScanRows(rows *sql.Rows, object db.ModelStruct) error {
 	err := s.gormDb.ScanRows(rows, object)
 	if err != nil {
 		s.sulog.Infof("scan sql rows failed, err:[%s]\n",
@@ -143,7 +149,7 @@ func (s *Server) ScanRows(rows *sql.Rows, object interface{}) error {
 	return nil
 }
 
-func (s *Server) QueryObjectById(modelStruct interface{},
+func (s *Server) QueryObjectById(modelStruct db.ModelStruct,
 	id int32) error {
 
 	if err := s.gormDb.Model(modelStruct).
@@ -156,7 +162,7 @@ func (s *Server) QueryObjectById(modelStruct interface{},
 	return nil
 }
 
-func (s *Server) QueryObjectByCondition(modelStruct interface{},
+func (s *Server) QueryObjectByCondition(modelStruct db.ModelStruct,
 	searchIndex, searchInput string) error {
 
 	if err := s.gormDb.Model(modelStruct).
@@ -169,7 +175,7 @@ func (s *Server) QueryObjectByCondition(modelStruct interface{},
 	return nil
 }
 
-func (s *Server) QueryObjectsByCondition(modelStruct interface{},
+func (s *Server) QueryObjectsByCondition(modelStruct db.ModelStruct,
 	searchIndex, searchInput string) (*sql.Rows, error) {
 
 	sqlRows, err := s.gormDb.Model(modelStruct).
@@ -220,9 +226,33 @@ func (s *Server) QueryLatestObjectsWithPage(params *QueryLatestObjectsParams) (*
 	}
 }
 
-func (s *Server) UpdateObject(modelStruc interface{}) error {
+func (s *Server) UpdateObject(modelStruc db.ModelStruct) error {
 	if err := s.gormDb.Model(modelStruc).Updates(modelStruc).Error; err != nil {
 		s.sulog.Infof("updates object failed, err:[%s]\n",
+			err.Error())
+		return err
+	}
+	return nil
+}
+
+func (s *Server) QueryOneObjectWithLatest(modelStruct db.ModelStruct,
+	groupIndex string) (*sql.Rows, error) {
+
+	groupSub := s.gormDb.Model(modelStruct).Select(groupIndex + ",MAX(last_time) as latest_time").
+		Group(groupIndex)
+
+	querySub := s.gormDb.Model(modelStruct).Joins("inner join (?) as t2 on t2."+groupIndex+
+		" = "+modelStruct.TableName()+"."+groupIndex+
+		" AND t2.latest_time = "+modelStruct.TableName()+".last_time",
+		groupSub)
+
+	return querySub.Rows()
+
+}
+
+func (s *Server) GetTableDataCount(model db.ModelStruct, count *int64) error {
+	if err := s.gormDb.Model(model).Count(count).Error; err != nil {
+		s.sulog.Infof("get table data count failed, err:[%s]\n",
 			err.Error())
 		return err
 	}

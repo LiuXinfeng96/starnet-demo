@@ -14,6 +14,7 @@ type InstructionResp struct {
 	DebrisName         string `json:"debrisName"`
 	SatelliteId        string `json:"satelliteId"`
 	SatelliteName      string `json:"satelliteName"`
+	Treaten            string `json:"treaten"`
 }
 
 type InstructionContractResp struct {

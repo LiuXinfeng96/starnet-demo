@@ -10,7 +10,7 @@ type Constellation struct {
 	SatelliteTotalNum  int32
 	SatelliteUpNum     int32
 	SatelliteDownNum   int32
-	SatelliteLinkState string
+	SatelliteLinkState State
 }
 
 func (c *Constellation) TableName() string {

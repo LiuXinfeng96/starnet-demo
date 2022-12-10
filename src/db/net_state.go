@@ -9,7 +9,7 @@ type NetState struct {
 	SatelliteName    string `gorm:"index"`
 	OrbitId          string
 	NetworkSegment   string
-	NetworkState     string
+	NetworkState     State
 	NetworkBandwidth string
 }
 
