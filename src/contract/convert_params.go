@@ -30,7 +30,7 @@ func DebrisConvert(debris *db.Debris) []*common.KeyValuePair {
 			Key:   "volume",
 			Value: []byte(strconv.FormatFloat(debris.Angle, 'f', 10, 64)),
 		}, &common.KeyValuePair{
-			Key:   "type",
+			Key:   "debrisType",
 			Value: []byte(db.DebrisTypeName[debris.Type]),
 		},
 	)

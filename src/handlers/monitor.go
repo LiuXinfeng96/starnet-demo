@@ -65,7 +65,7 @@ func MonitorGetAllState(s *services.Server) gin.HandlerFunc {
 		}
 
 		constellation := new(db.Constellation)
-		sqlRows, err = s.QueryOneObjectWithLatest(constellation, "satellite_id")
+		sqlRows, err = s.QueryOneObjectWithLatest(constellation, "constellation_id")
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -263,15 +263,57 @@ func MonitorGetEarlWarning(s *services.Server) gin.HandlerFunc {
 
 		gormDB := s.GetGormObject()
 		err := gormDB.Model(&db.Instruction{}).
-			Select("instruction.debris_id, instruction.debris_name, instruction.debris_name.threaten, "+
+			Select("instruction.debris_id, instruction.debris_name, instruction.debris_name, "+
 				"instruction.satellite_name, instruction.satellite_id, debris.speed, debris.height").
 			Joins("inner join debris on debris.debris_id = instruction.debris_id").
-			Where("treaten = ? AND treaten = ? AND exec_state = ?", db.LOW, db.HIGH, db.NOTEXEC).
-			Order("last_time desc").Limit(20).Find(&resp).Error
+			Where("instruction.treaten = ? AND instruction.treaten = ? AND instruction.exec_state = ?", db.LOW, db.HIGH, db.NOTEXEC).
+			Order("instruction.last_time desc").Limit(20).Find(&resp).Error
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
 		}
+
+		SuccessfulJSONResp(resp, c)
+
+	}
+}
+
+func MonitorGetChainInfo(s *services.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var resp []*models.ChainInfo
+
+		masterClient, err := s.GetSdkClient(s.GetMasterChainUserName() + s.GetMasterChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
+		execClient, err := s.GetSdkClient(s.GetExecChainUserName() + s.GetExecChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
+		var masterChainInfo models.ChainInfo
+		masterChainInfo.BlockHeight, err = masterClient.GetCurrentBlockHeight()
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		masterChainInfo.ChainName = "主链"
+
+		var execChainInfo models.ChainInfo
+		execChainInfo.BlockHeight, err = execClient.GetCurrentBlockHeight()
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		execChainInfo.ChainName = "星座链"
+
+		resp = append(resp, &masterChainInfo)
+		resp = append(resp, &execChainInfo)
 
 		SuccessfulJSONResp(resp, c)
 

@@ -127,7 +127,7 @@ func LoadMonitorRouter(s *services.Server) {
 		routerGroup.GET("/getstate", handlers.MonitorGetAllState(s))
 		routerGroup.GET("/getchaindatanum", handlers.MonitorGetTableCount(s))
 		routerGroup.GET("/getfaultinfo", handlers.MonitorGetFaultInfo(s))
-		routerGroup.GET("/getearlywarning", handlers.TraceGetCommStateList(s))
-		routerGroup.GET("/getchaininfo", handlers.TraceGetCommetState(s))
+		routerGroup.GET("/getearlywarning", handlers.MonitorGetEarlWarning(s))
+		routerGroup.GET("/getchaininfo", handlers.MonitorGetChainInfo(s))
 	}
 }

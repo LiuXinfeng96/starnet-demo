@@ -299,7 +299,7 @@ type EarlyWarningInfo struct {
 
 type ChainInfo struct {
 	NodeNum     int32  `json:"nodeNum"`
-	BlockHeight int32  `json:"blockHeight"`
+	BlockHeight uint64 `json:"blockHeight"`
 	ChainName   string `json:"chainName"`
 	TxNum       int32  `json:"txNum"`
 }

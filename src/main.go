@@ -64,6 +64,8 @@ func Start(s *services.Server) error {
 
 	routers.LoadNoTokenRouter(s)
 
+	routers.LoadMonitorRouter(s)
+
 	s.GetGinEngine().Use(handlers.JWTAuthMiddleware(s))
 
 	routers.LoadUserRouter(s)
@@ -73,8 +75,6 @@ func Start(s *services.Server) error {
 	routers.LoadExecRouter(s)
 
 	routers.LoadTraceRouter(s)
-
-	routers.LoadMonitorRouter(s)
 
 	err := s.GetGinEngine().Run(":" + s.GetSeverPort())
 	if err != nil {

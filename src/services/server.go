@@ -61,8 +61,8 @@ func WithSdkPool(maxEntries int) Option {
 
 func NewServer(opts ...Option) (*Server, error) {
 	server := new(Server)
-	server.retryTime = 4
-	server.retryInterval = time.Microsecond * 1000
+	server.retryTime = 3
+	server.retryInterval = time.Millisecond * 1000
 	for _, opt := range opts {
 		opt(server)
 	}
