@@ -206,6 +206,6 @@ func getBlockChainFiledFromResp(cr *common.ContractResult) (db.BlockChainField, 
 	var bcFiled db.BlockChainField
 	bcFiled.TxId = resp.TxId
 	bcFiled.BlockHeight = resp.BlockHeight
-	bcFiled.ChainTime = resp.ChainTime
+	bcFiled.ChainTime = time.Now().Unix()
 	return bcFiled, nil
 }

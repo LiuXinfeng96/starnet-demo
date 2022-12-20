@@ -334,7 +334,7 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 			}
 			debirs.BlockHeight = irs.BlockHeight
 			debirs.TxId = irs.TxId
-			debirs.ChainTime = irs.ChainTime
+			debirs.ChainTime = time.Now().Unix()
 
 			err = s.UpdateObject(debirs)
 			if err != nil {

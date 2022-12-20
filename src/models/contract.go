@@ -2,7 +2,6 @@ package models
 
 type ContractResp struct {
 	BlockHeight int32  `json:"blockHeight"`
-	ChainTime   int64  `json:"chainTime"`
 	TxId        string `json:"txId"`
 }
 

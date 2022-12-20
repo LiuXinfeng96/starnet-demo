@@ -4,6 +4,7 @@ import (
 	"starnet-demo/src/db"
 	"starnet-demo/src/models"
 	"strconv"
+	"time"
 
 	"chainmaker.org/chainmaker/pb-go/v2/common"
 )
@@ -330,7 +331,7 @@ func InstructionContractRespConvert(icp *models.InstructionContractResp, source,
 				ChainId:     chainId,
 				BlockHeight: icp.BlockHeight,
 				TxId:        icp.TxId,
-				ChainTime:   icp.ChainTime,
+				ChainTime:   time.Now().Unix(),
 			},
 		})
 	}
