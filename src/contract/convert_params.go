@@ -73,6 +73,9 @@ func InstructionConvert(ins *db.Instruction) []*common.KeyValuePair {
 		}, &common.KeyValuePair{
 			Key:   "execInstructionTime",
 			Value: []byte(strconv.Itoa(int(ins.ExecInstructionTime))),
+		}, &common.KeyValuePair{
+			Key:   "treaten",
+			Value: []byte(db.ThreatDegreeName[ins.Treaten]),
 		},
 	)
 	return params
@@ -322,7 +325,6 @@ func InstructionContractRespConvert(icp *models.InstructionContractResp, source,
 			Treaten:            db.ThreatDegreeValue[v.Treaten],
 			SatelliteId:        v.SatelliteId,
 			SatelliteName:      v.SatelliteName,
-			GenInstructionTime: v.GenInstructionTime,
 			ExecState:          db.NOTEXEC,
 			BlockChainField: db.BlockChainField{
 				ChainId:     chainId,

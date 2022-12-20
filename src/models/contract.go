@@ -8,8 +8,8 @@ type ContractResp struct {
 
 type InstructionResp struct {
 	InstructionId      string `json:"instructionId"`
+	InstructionType    string `json:"instructionType"`
 	InstructionContent string `json:"instructionContent"`
-	GenInstructionTime int64  `json:"genInstructionTime"`
 	DebrisId           string `json:"debrisId"`
 	DebrisName         string `json:"debrisName"`
 	SatelliteId        string `json:"satelliteId"`
