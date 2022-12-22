@@ -246,13 +246,6 @@ func MonitorGetFaultInfo(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		err = gormDb.Model(&db.Fault{}).Where("fault_type = ?", db.EType).
-			Count(&resp.EType).Error
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
-
 		SuccessfulJSONResp(&resp, c)
 	}
 }
@@ -266,7 +259,7 @@ func MonitorGetEarlWarning(s *services.Server) gin.HandlerFunc {
 			Select("instruction.debris_id, instruction.debris_name, instruction.debris_name, "+
 				"instruction.satellite_name, instruction.satellite_id, debris.speed, debris.height").
 			Joins("inner join debris on debris.debris_id = instruction.debris_id").
-			Where("instruction.treaten = ? AND instruction.treaten = ? AND instruction.exec_state = ?", db.LOW, db.HIGH, db.NOTEXEC).
+			Where("instruction.treaten = ? OR instruction.treaten = ? AND instruction.exec_state = ?", db.LOW, db.HIGH, db.NOTEXEC).
 			Order("instruction.last_time desc").Limit(20).Find(&resp).Error
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)

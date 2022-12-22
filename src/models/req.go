@@ -26,7 +26,7 @@ type AddDebirsReq struct {
 }
 
 type AddInstructionReq struct {
-	InstructtionId     string `json:"instructionId"`
+	InstructionId      string `json:"instructionId"`
 	DebrisId           string `json:"debrisId"`
 	DebrisName         string `json:"debrisName"`
 	SatelliteId        string `json:"satelliteId"`

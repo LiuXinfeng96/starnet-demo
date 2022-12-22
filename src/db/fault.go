@@ -9,15 +9,13 @@ const (
 	BType
 	CType
 	DType
-	EType
 )
 
 const (
-	AType_STR = "A类"
-	BType_STR = "B类"
-	CType_STR = "C类"
-	DType_STR = "D类"
-	EType_STR = "E类"
+	AType_STR = "1"
+	BType_STR = "2"
+	CType_STR = "3"
+	DType_STR = "4"
 )
 
 var FaultTypeName = map[FaultType]string{
@@ -25,7 +23,6 @@ var FaultTypeName = map[FaultType]string{
 	BType: BType_STR,
 	CType: CType_STR,
 	DType: DType_STR,
-	EType: EType_STR,
 }
 
 var FaultTypeValue = map[string]FaultType{
@@ -33,7 +30,6 @@ var FaultTypeValue = map[string]FaultType{
 	BType_STR: BType,
 	CType_STR: CType,
 	DType_STR: DType,
-	EType_STR: EType,
 }
 
 type Fault struct {

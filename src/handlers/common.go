@@ -13,7 +13,9 @@ import (
 
 var PHONE_NUM_REGEXP = regexp.MustCompile(`1[3456789]\d{9}`)
 
-var EMAIL_REFEXP = regexp.MustCompile(`^[0-9a-z][_.0-9a-z-]{0,31}@([0-9a-z][0-9a-z-]{0,30}[0-9a-z]\.){1,4}[a-z]{2,4}$`)
+var EMAIL_REGEXP = regexp.MustCompile(`^[0-9a-z][_.0-9a-z-]{0,31}@([0-9a-z][0-9a-z-]{0,30}[0-9a-z]\.){1,4}[a-z]{2,4}$`)
+
+var KEY_RULE_REGEXP = regexp.MustCompile(`^[a-zA-Z0-9._-]+$`)
 
 func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -170,8 +172,15 @@ func checkThePhoneNum(num string) error {
 }
 
 func checkTheEmail(email string) error {
-	if !EMAIL_REFEXP.MatchString(email) {
+	if !EMAIL_REGEXP.MatchString(email) {
 		return errors.New("does not conform to the email format")
+	}
+	return nil
+}
+
+func checkTheKeyRule(key string) error {
+	if !KEY_RULE_REGEXP.MatchString(key) {
+		return errors.New("the key can only consist of numbers, dot, letters and underscores")
 	}
 	return nil
 }

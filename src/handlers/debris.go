@@ -34,9 +34,21 @@ func ControlAddDebris(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
+		err = checkTheKeyRule(req.DebrisId)
+		if err != nil {
+			ParamsFormatErrorJSONResp(err.Error(), c)
+			return
+		}
+
 		debrisType, ok := db.DebrisTypeValue[req.Type]
 		if !ok {
 			ParamsValueJSONResp("debirs type not as expected", c)
+			return
+		}
+
+		client, err := s.GetSdkClient(s.GetMasterChainUserName() + s.GetMasterChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
 			return
 		}
 
@@ -57,19 +69,6 @@ func ControlAddDebris(s *services.Server) gin.HandlerFunc {
 		err = s.InsertOneObjertToDB(debirs)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
-
-		token, ok1 := c.Get("token")
-		claims, ok2 := token.(*services.MyClaims)
-		if !ok1 || !ok2 {
-			ServerErrorJSONResp("get the token from context failed", c)
-			return
-		}
-
-		client, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
-		if err != nil {
-			NotInChainJSONResp(err.Error(), c)
 			return
 		}
 
@@ -255,9 +254,34 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
+		err = checkTheKeyRule(req.DebrisId)
+		if err != nil {
+			ParamsFormatErrorJSONResp(err.Error(), c)
+			return
+		}
+
 		debrisType, ok := db.DebrisTypeValue[req.Type]
 		if !ok {
 			ParamsValueJSONResp("debirs type not as expected", c)
+			return
+		}
+
+		token, ok1 := c.Get("token")
+		claims, ok2 := token.(*services.MyClaims)
+		if !ok1 || !ok2 {
+			ServerErrorJSONResp("get the token from context failed", c)
+			return
+		}
+
+		execClient, err := s.GetSdkClient(s.GetExecChainUserName() + s.GetExecChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
+		masterClient, err := s.GetSdkClient(s.GetMasterChainUserName() + s.GetMasterChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
 			return
 		}
 		//------------------------------------------------------------------------------------------------
@@ -289,25 +313,6 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		token, ok1 := c.Get("token")
-		claims, ok2 := token.(*services.MyClaims)
-		if !ok1 || !ok2 {
-			ServerErrorJSONResp("get the token from context failed", c)
-			return
-		}
-
-		execClient, err := s.GetSdkClient(claims.Name + s.GetExecChainId())
-		if err != nil {
-			NotInChainJSONResp(err.Error(), c)
-			return
-		}
-
-		masterClient, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
-		if err != nil {
-			NotInChainJSONResp(err.Error(), c)
-			return
-		}
-
 		debirsKvs := contract.DebrisConvert(debirs)
 
 		// 碎片信息和指令信息上星座链
@@ -332,9 +337,10 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 					err.Error())
 				return
 			}
+			chainTime := time.Now().Unix()
 			debirs.BlockHeight = irs.BlockHeight
 			debirs.TxId = irs.TxId
-			debirs.ChainTime = time.Now().Unix()
+			debirs.ChainTime = chainTime
 
 			err = s.UpdateObject(debirs)
 			if err != nil {
@@ -354,6 +360,19 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 				return
 			}
 
+			for _, v := range instructions {
+				v.BlockHeight = irs.BlockHeight
+				v.TxId = irs.TxId
+				v.ChainTime = chainTime
+				err = s.UpdateObject(v)
+				if err != nil {
+					s.GetSuLogger().Warnf("invoke gen instruction update object failed, err: [%s]\n",
+						err.Error())
+					return
+				}
+
+			}
+
 			// 碎片信息和指令信息上主链
 			go func() {
 				go s.SendTxToBlockChain(s.GetMasterContractName(),
@@ -368,13 +387,28 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 				}
 			}()
 
+			execInstructionTime := time.Now().Unix()
 			for _, v := range instructions {
-				v.Id = 0
-				v.ExecState = db.INEXEC
-				v.ExecInstructionTime = time.Now().Unix()
+				inExecI := &db.Instruction{
+					InstructionId:       v.InstructionId,
+					InstructionSource:   v.InstructionSource,
+					Type:                v.Type,
+					ExecState:           db.INEXEC,
+					InstructionContent:  v.InstructionContent,
+					DebrisId:            v.DebrisId,
+					DebrisName:          v.DebrisName,
+					SatelliteId:         v.SatelliteId,
+					SatelliteName:       v.SatelliteName,
+					GenInstructionTime:  v.GenInstructionTime,
+					ExecInstructionTime: execInstructionTime,
+					Treaten:             v.Treaten,
+					BlockChainField: db.BlockChainField{
+						ChainId: s.GetExecChainId(),
+					},
+				}
 
 				// 开始执行指令信息入库
-				err = s.InsertOneObjertToDB(v)
+				err = s.InsertOneObjertToDB(inExecI)
 				if err != nil {
 					ServerErrorJSONResp(err.Error(), c)
 					return
@@ -382,10 +416,10 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 
 				// 开始执行指令信息上星座链
 
-				eikvs := contract.InstructionConvert(v)
+				eikvs := contract.InstructionConvert(inExecI)
 				s.SendTxToBlockChain(s.GetExecContractName(),
 					contract.EXEC_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, execClient,
-					eikvs, v, &v.BlockChainField)
+					eikvs, inExecI, &inExecI.BlockChainField)
 
 				// 开始执行指令信息上主链
 				go s.SendTxToBlockChain(s.GetMasterContractName(),
@@ -394,22 +428,37 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 
 				// 假设执行中 -------------------------------------
 				time.Sleep(time.Millisecond * 500)
-				//-------------------------------------------------
+				//--------------------------------------------------
 
-				v.Id = 0
-				v.ExecState = db.EXECSUCCESS
+				endExecI := &db.Instruction{
+					InstructionId:       v.InstructionId,
+					InstructionSource:   v.InstructionSource,
+					Type:                v.Type,
+					ExecState:           db.EXECSUCCESS,
+					InstructionContent:  v.InstructionContent,
+					DebrisId:            v.DebrisId,
+					DebrisName:          v.DebrisName,
+					SatelliteId:         v.SatelliteId,
+					SatelliteName:       v.SatelliteName,
+					GenInstructionTime:  v.GenInstructionTime,
+					ExecInstructionTime: execInstructionTime,
+					Treaten:             v.Treaten,
+					BlockChainField: db.BlockChainField{
+						ChainId: s.GetExecChainId(),
+					},
+				}
 				// 执行结果入库
-				err = s.InsertOneObjertToDB(v)
+				err = s.InsertOneObjertToDB(endExecI)
 				if err != nil {
 					ServerErrorJSONResp(err.Error(), c)
 					return
 				}
 
 				// 执行结果上星座链
-				rikvs := contract.InstructionConvert(v)
+				rikvs := contract.InstructionConvert(endExecI)
 				s.SendTxToBlockChain(s.GetExecContractName(),
 					contract.EXEC_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, execClient,
-					rikvs, v, &v.BlockChainField)
+					rikvs, endExecI, &endExecI.BlockChainField)
 
 				// 执行结果上主链
 				go s.SendTxToBlockChain(s.GetMasterContractName(),

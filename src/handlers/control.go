@@ -30,6 +30,24 @@ func ExecAddControl(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
+		err = checkTheKeyRule(req.SatelliteId)
+		if err != nil {
+			ParamsFormatErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		execClient, err := s.GetSdkClient(s.GetExecChainUserName() + s.GetExecChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
+		masterClient, err := s.GetSdkClient(s.GetMasterChainUserName() + s.GetMasterChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
 		// 1. 管控信息上星座链
 		// 2. 入库
 
@@ -50,28 +68,11 @@ func ExecAddControl(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		token, ok1 := c.Get("token")
-		claims, ok2 := token.(*services.MyClaims)
-		if !ok1 || !ok2 {
-			ServerErrorJSONResp("get the token from context failed", c)
-			return
-		}
-		execClient, err := s.GetSdkClient(claims.Name + s.GetExecChainId())
-		if err != nil {
-			NotInChainJSONResp(err.Error(), c)
-			return
-		}
-
 		kvs := contract.ControlConvert(control)
 		go s.SendTxToBlockChain(s.GetExecContractName(),
 			contract.EXEC_CONTRACT_FUNC_NAME_PUT_CONTROL, execClient,
 			kvs, control, &control.BlockChainField)
 
-		masterClient, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
-		if err != nil {
-			NotInChainJSONResp(err.Error(), c)
-			return
-		}
 		go s.SendTxToBlockChain(s.GetExecContractName(),
 			contract.MASTER_CONTRACT_FUNC_NAME_PUT_CONTROL, masterClient,
 			kvs, nil, nil)

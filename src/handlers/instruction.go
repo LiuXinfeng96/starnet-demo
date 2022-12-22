@@ -24,11 +24,17 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		err := isStringRequiredParamsEmpty(req.InstructtionId,
+		err := isStringRequiredParamsEmpty(req.InstructionId,
 			req.InstructionContent, req.DebrisId, req.DebrisName,
 			req.SatelliteId, req.SatelliteName)
 		if err != nil {
 			ParamsMissingJSONResp(err.Error(), c)
+			return
+		}
+
+		err = checkTheKeyRule(req.InstructionId)
+		if err != nil {
+			ParamsFormatErrorJSONResp(err.Error(), c)
 			return
 		}
 
@@ -39,9 +45,21 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
+		masterClient, err := s.GetSdkClient(s.GetMasterChainUserName() + s.GetMasterChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
+		execClient, err := s.GetSdkClient(s.GetExecChainUserName() + s.GetExecChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
 		genInstructionTime := time.Now().Unix()
-		instruction := &db.Instruction{
-			InstructionId:      req.InstructtionId,
+		noExecI := &db.Instruction{
+			InstructionId:      req.InstructionId,
 			InstructionSource:  claims.Name,
 			Type:               db.OPERATION,
 			ExecState:          db.NOTEXEC,
@@ -56,31 +74,25 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			},
 		}
 		// 未执行指令信息入库
-		err = s.InsertOneObjertToDB(instruction)
+		err = s.InsertOneObjertToDB(noExecI)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
 		}
 
-		masterClient, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
-		if err != nil {
-			NotInChainJSONResp(err.Error(), c)
-			return
-		}
-
-		noikvs := contract.InstructionConvert(instruction)
+		noikvs := contract.InstructionConvert(noExecI)
 		// 未执行指令信息上主链
 		go s.SendTxToBlockChain(s.GetMasterContractName(),
 			contract.MASTER_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, masterClient,
-			noikvs, instruction, &instruction.BlockChainField)
+			noikvs, noExecI, &noExecI.BlockChainField)
 
 		operation := &db.Operation{
 			Operator:        claims.Name,
 			OperatorIp:      c.ClientIP(),
 			OperationTime:   genInstructionTime,
-			SatelliteId:     instruction.SatelliteId,
-			SatelliteName:   instruction.SatelliteName,
-			OperationRecord: "编辑指令：" + instruction.InstructionId,
+			SatelliteId:     req.SatelliteId,
+			SatelliteName:   req.SatelliteName,
+			OperationRecord: "编辑指令：" + req.InstructionId,
 			BlockChainField: db.BlockChainField{
 				ChainId: s.GetMasterChainId(),
 			},
@@ -99,26 +111,34 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			contract.MASTER_CONTRACT_FUNC_NAME_PUT_OPERATION, masterClient,
 			okvs, operation, &operation.BlockChainField)
 
-		execClient, err := s.GetSdkClient(claims.Name + s.GetExecChainId())
-		if err != nil {
-			NotInChainJSONResp(err.Error(), c)
-			return
+		execInstructionTime := time.Now().Unix()
+		inExecI := &db.Instruction{
+			InstructionId:       req.InstructionId,
+			InstructionSource:   claims.Name,
+			Type:                db.OPERATION,
+			ExecState:           db.INEXEC,
+			InstructionContent:  req.InstructionContent,
+			DebrisId:            req.DebrisId,
+			DebrisName:          req.DebrisName,
+			SatelliteId:         req.SatelliteId,
+			SatelliteName:       req.SatelliteName,
+			GenInstructionTime:  genInstructionTime,
+			ExecInstructionTime: execInstructionTime,
+			BlockChainField: db.BlockChainField{
+				ChainId: s.GetMasterChainId(),
+			},
 		}
-
-		instruction.Id = 0
-		instruction.ExecState = db.INEXEC
-		instruction.ExecInstructionTime = time.Now().Unix()
 		// 执行指令入库
-		err = s.InsertOneObjertToDB(instruction)
+		err = s.InsertOneObjertToDB(inExecI)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
 		}
 
-		ineikvs := contract.InstructionConvert(instruction)
+		ineikvs := contract.InstructionConvert(inExecI)
 		go s.SendTxToBlockChain(s.GetExecContractName(),
 			contract.EXEC_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, execClient,
-			ineikvs, instruction, &instruction.BlockChainField)
+			ineikvs, inExecI, &inExecI.BlockChainField)
 
 		go s.SendTxToBlockChain(s.GetMasterContractName(),
 			contract.MASTER_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, masterClient,
@@ -128,21 +148,36 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 		time.Sleep(time.Millisecond * 500)
 		//-----------------------------------------
 
-		instruction.Id = 0
-		instruction.ExecState = db.EXECSUCCESS
+		endExecI := &db.Instruction{
+			InstructionId:       req.InstructionId,
+			InstructionSource:   claims.Name,
+			Type:                db.OPERATION,
+			ExecState:           db.EXECSUCCESS,
+			InstructionContent:  req.InstructionContent,
+			DebrisId:            req.DebrisId,
+			DebrisName:          req.DebrisName,
+			SatelliteId:         req.SatelliteId,
+			SatelliteName:       req.SatelliteName,
+			GenInstructionTime:  genInstructionTime,
+			ExecInstructionTime: execInstructionTime,
+			BlockChainField: db.BlockChainField{
+				ChainId: s.GetMasterChainId(),
+			},
+		}
+
 		// 执行结果入库
-		err = s.InsertOneObjertToDB(instruction)
+		err = s.InsertOneObjertToDB(endExecI)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
 		}
 
-		rikvs := contract.InstructionConvert(instruction)
+		rikvs := contract.InstructionConvert(endExecI)
 
 		// 执行结果上星座链
 		go s.SendTxToBlockChain(s.GetExecContractName(),
 			contract.EXEC_CONTRACT_FUNC_NAME_PUT_INSTRUCTION, execClient,
-			rikvs, instruction, &instruction.BlockChainField)
+			rikvs, endExecI, &endExecI.BlockChainField)
 
 		// 执行结果上主链
 		go s.SendTxToBlockChain(s.GetMasterContractName(),
@@ -150,11 +185,11 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			rikvs, nil, nil)
 
 		operation = &db.Operation{
-			Operator:        "卫星执行系统",
+			Operator:        claims.Name,
 			OperationTime:   genInstructionTime,
-			SatelliteId:     instruction.SatelliteId,
-			SatelliteName:   instruction.SatelliteName,
-			OperationRecord: "执行指令：" + instruction.InstructionId,
+			SatelliteId:     req.SatelliteId,
+			SatelliteName:   req.SatelliteName,
+			OperationRecord: "执行指令：" + req.InstructionId,
 			BlockChainField: db.BlockChainField{
 				ChainId: s.GetMasterChainId(),
 			},

@@ -30,9 +30,21 @@ func ControlAddConstellation(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
+		err = checkTheKeyRule(req.ConstellationId)
+		if err != nil {
+			ParamsFormatErrorJSONResp(err.Error(), c)
+			return
+		}
+
 		satelliteLinkState, ok := db.StateValue[req.SatelliteLinkState]
 		if !ok {
 			ParamsValueJSONResp("satellite link state type not as expected", c)
+			return
+		}
+
+		masterClient, err := s.GetSdkClient(s.GetMasterChainUserName() + s.GetMasterChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
 			return
 		}
 
@@ -54,18 +66,6 @@ func ControlAddConstellation(s *services.Server) gin.HandlerFunc {
 		err = s.InsertOneObjertToDB(constellation)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
-
-		token, ok1 := c.Get("token")
-		claims, ok2 := token.(*services.MyClaims)
-		if !ok1 || !ok2 {
-			ServerErrorJSONResp("get the token from context failed", c)
-			return
-		}
-		masterClient, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
-		if err != nil {
-			NotInChainJSONResp(err.Error(), c)
 			return
 		}
 

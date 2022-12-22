@@ -180,7 +180,7 @@ func (s *Server) SendTxToBlockChain(contractName, funcName string, client *sdk.C
 		}
 
 		if blockChainField != nil {
-			*blockChainField, err = getBlockChainFiledFromResp(resp.ContractResult)
+			*blockChainField, err = s.getBlockChainFiledFromResp(resp.ContractResult)
 			if err != nil {
 				s.GetSuLogger().Warnf("get block chain info from contract resp failed, err: [%s], result: [%+v]",
 					err.Error(), resp.ContractResult)
@@ -197,7 +197,7 @@ func (s *Server) SendTxToBlockChain(contractName, funcName string, client *sdk.C
 
 }
 
-func getBlockChainFiledFromResp(cr *common.ContractResult) (db.BlockChainField, error) {
+func (s *Server) getBlockChainFiledFromResp(cr *common.ContractResult) (db.BlockChainField, error) {
 	var resp models.ContractResp
 	err := json.Unmarshal(cr.Result, &resp)
 	if err != nil {

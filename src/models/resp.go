@@ -284,7 +284,6 @@ type FaultTypeInfo struct {
 	BType int64 `json:"btype"`
 	CType int64 `json:"ctype"`
 	DType int64 `json:"dtype"`
-	EType int64 `json:"etype"`
 }
 
 type EarlyWarningInfo struct {

@@ -30,11 +30,30 @@ func ExecAddSatelliteState(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
+		err = checkTheKeyRule(req.SatelliteId)
+		if err != nil {
+			ParamsFormatErrorJSONResp(err.Error(), c)
+			return
+		}
+
 		runState, ok := db.StateValue[req.RunState]
 		if !ok {
 			ParamsValueJSONResp("run state type not as expected", c)
 			return
 		}
+
+		execClient, err := s.GetSdkClient(s.GetExecChainUserName() + s.GetExecChainId())
+		if err != nil {
+			NotInChainJSONResp(err.Error(), c)
+			return
+		}
+
+		masterClient, err := s.GetSdkClient(s.GetMasterChainUserName() + s.GetMasterChainId())
+		if err != nil {
+			s.GetSuLogger().Warn(err)
+			return
+		}
+
 		satellite := &db.Satellite{
 			SatelliteId:   req.SatelliteId,
 			SatelliteName: req.SatelliteName,
@@ -53,29 +72,11 @@ func ExecAddSatelliteState(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		token, ok1 := c.Get("token")
-		claims, ok2 := token.(*services.MyClaims)
-		if !ok1 || !ok2 {
-			ServerErrorJSONResp("get the token from context failed", c)
-			return
-		}
-		execClient, err := s.GetSdkClient(claims.Name + s.GetExecChainId())
-		if err != nil {
-			NotInChainJSONResp(err.Error(), c)
-			return
-		}
-
 		kvs := contract.SatelliteConvert(satellite)
 
 		go s.SendTxToBlockChain(s.GetExecContractName(),
 			contract.EXEC_CONTRACT_FUNC_NAME_PUT_SATELLITE, execClient,
 			kvs, satellite, &satellite.BlockChainField)
-
-		masterClient, err := s.GetSdkClient(claims.Name + s.GetMasterChainId())
-		if err != nil {
-			s.GetSuLogger().Warn(err)
-			return
-		}
 
 		go s.SendTxToBlockChain(s.GetMasterContractName(),
 			contract.MASTER_CONTRACT_FUNC_NAME_PUT_SATELLITE, masterClient,

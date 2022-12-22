@@ -119,6 +119,12 @@ func Register(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
+		err = checkTheKeyRule(req.UserName)
+		if err != nil {
+			ParamsFormatErrorJSONResp(err.Error(), c)
+			return
+		}
+
 		err = checkThePhoneNum(req.UserPhoneNum)
 		if err != nil {
 			ParamsFormatErrorJSONResp(err.Error(), c)
