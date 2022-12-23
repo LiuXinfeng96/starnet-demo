@@ -76,7 +76,6 @@ type AddFaultReq struct {
 	OrbitId          string `json:"orbitId"`
 	FaultType        string `json:"faultType"`
 	FaultDescription string `json:"faultDescription"`
-	FaultTime        int64  `json:"faultTime"`
 	RepairState      string `json:"repairState"`
 }
 

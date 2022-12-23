@@ -60,7 +60,7 @@ func ControlGetOperationList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "satellite_name")
 		}
 
-		sqlRows, err := s.QueryObjectsWithPage(params)
+		sqlRows, total, err := s.QueryObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -93,7 +93,7 @@ func ControlGetOperationList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }
 
@@ -154,7 +154,7 @@ func TraceGetOperation(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONResp(resp, c)
 	}
 }
 
@@ -209,7 +209,7 @@ func ExecGetOperationList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "satellite_name")
 		}
 
-		sqlRows, err := s.QueryObjectsWithPageSC(params)
+		sqlRows, total, err := s.QueryObjectsWithPageSC(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -242,7 +242,7 @@ func ExecGetOperationList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }
 
@@ -298,7 +298,7 @@ func TraceGetOperationList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "satellite_name")
 		}
 
-		sqlRows, err := s.QueryLatestObjectsWithPage(params)
+		sqlRows, total, err := s.QueryLatestObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -331,6 +331,6 @@ func TraceGetOperationList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }

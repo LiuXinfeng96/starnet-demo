@@ -70,72 +70,104 @@ func (s *Server) InsertObjectsToDB(objects interface{}) error {
 	return nil
 }
 
-func (s *Server) QueryObjectsWithPage(params *QueryObjectsParams) (*sql.Rows, error) {
+func (s *Server) QueryObjectsWithPage(params *QueryObjectsParams) (sqlRow *sql.Rows, total int64, err error) {
 	switch params.SortType {
 	case SORTTYPE_TIME:
 		offset := (params.Page - 1) * params.PageSize
 
-		querySub := s.gormDb.Model(params.ModelStruct).Select("id").
+		querySub := s.gormDb.Model(params.ModelStruct).Select("id").Order("last_time desc").
 			Limit(int(params.PageSize)).Offset(int(offset))
+
+		totalSub := s.gormDb.Model(params.ModelStruct).Select("id")
 
 		if len(params.SearchIndex) != 0 && len(params.SearchInput) != 0 {
 			for i, v := range params.SearchIndex {
 				if i == 0 {
 					querySub = querySub.Where(v+" LIKE ?", "%"+params.SearchInput+"%")
+					totalSub = totalSub.Where(v+" LIKE ?", "%"+params.SearchInput+"%")
 					continue
 				}
 				querySub = querySub.Or(v+" LIKE ?", "%"+params.SearchInput+"%")
+				totalSub = totalSub.Or(v+" LIKE ?", "%"+params.SearchInput+"%")
 			}
 		}
 
 		if len(params.QueryMap) != 0 {
 			for k, v := range params.QueryMap {
 				querySub = querySub.Where(k+" = ?", v)
+				totalSub = totalSub.Where(k+" = ?", v)
 			}
 		}
 
-		return s.gormDb.Model(params.ModelStruct).Order("last_time desc").
+		err = totalSub.Count(&total).Error
+		if err != nil {
+			return
+		}
+
+		sqlRow, err = s.gormDb.Model(params.ModelStruct).Order("last_time desc").
 			Joins("inner join (?) as t2 using(id)", querySub).Rows()
+		if err != nil {
+			return
+		}
+		return
+
 	default:
-		err := errors.New("the sort type does not exist")
+		err = errors.New("the sort type does not exist")
 		s.sulog.Infof("query objects with page from db failed, err:[%s]\n",
 			err.Error())
-		return nil, err
+		return
 	}
 }
 
-func (s *Server) QueryObjectsWithPageSC(params *QueryObjectsParams) (*sql.Rows, error) {
+func (s *Server) QueryObjectsWithPageSC(params *QueryObjectsParams) (sqlRow *sql.Rows, total int64, err error) {
 	switch params.SortType {
 	case SORTTYPE_TIME:
 		offset := (params.Page - 1) * params.PageSize
 
 		querySub := s.gormDb.Model(params.ModelStruct).Select("id").
-			Where("chain_id = ?", s.GetExecChainId()).
+			Where("chain_id = ?", s.GetExecChainId()).Order("last_time desc").
 			Limit(int(params.PageSize)).Offset(int(offset))
+
+		totalSub := s.gormDb.Model(params.ModelStruct).Select("id").
+			Where("chain_id = ?", s.GetExecChainId())
 
 		if len(params.SearchIndex) != 0 && len(params.SearchInput) != 0 {
 			for i, v := range params.SearchIndex {
 				if i == 0 {
 					querySub = querySub.Where(v+" LIKE ?", "%"+params.SearchInput+"%")
+					totalSub = totalSub.Where(v+" LIKE ?", "%"+params.SearchInput+"%")
 					continue
 				}
 				querySub = querySub.Or(v+" LIKE ?", "%"+params.SearchInput+"%")
+				totalSub = totalSub.Or(v+" LIKE ?", "%"+params.SearchInput+"%")
 			}
 		}
 
 		if len(params.QueryMap) != 0 {
 			for k, v := range params.QueryMap {
 				querySub = querySub.Where(k+" = ?", v)
+				totalSub = totalSub.Where(k+" = ?", v)
 			}
 		}
 
-		return s.gormDb.Model(params.ModelStruct).Order("last_time desc").
+		err = totalSub.Count(&total).Error
+		if err != nil {
+			return
+		}
+
+		sqlRow, err = s.gormDb.Model(params.ModelStruct).Order("last_time desc").
 			Joins("inner join (?) as t2 using(id)", querySub).Rows()
+		if err != nil {
+			return
+		}
+
+		return
+
 	default:
-		err := errors.New("the sort type does not exist")
+		err = errors.New("the sort type does not exist")
 		s.sulog.Infof("query objects with page from db failed, err:[%s]\n",
 			err.Error())
-		return nil, err
+		return
 	}
 }
 
@@ -191,7 +223,8 @@ func (s *Server) QueryObjectsByCondition(modelStruct db.ModelStruct,
 	return sqlRows, nil
 }
 
-func (s *Server) QueryLatestObjectsWithPage(params *QueryLatestObjectsParams) (*sql.Rows, error) {
+func (s *Server) QueryLatestObjectsWithPage(params *QueryLatestObjectsParams) (
+	sqlRow *sql.Rows, total int64, err error) {
 	switch params.SortType {
 	case SORTTYPE_TIME:
 		offset := (params.Page - 1) * params.PageSize
@@ -205,24 +238,47 @@ func (s *Server) QueryLatestObjectsWithPage(params *QueryLatestObjectsParams) (*
 				" AND t2.latest_time = "+params.ModelStruct.TableName()+".last_time",
 				groupSub).Limit(int(params.PageSize)).Offset(int(offset))
 
+		totalSub := s.gormDb.Model(params.ModelStruct).Select("id").
+			Joins("inner join (?) as t2 on t2."+params.GroupIndex+
+				" = "+params.ModelStruct.TableName()+"."+params.GroupIndex+
+				" AND t2.latest_time = "+params.ModelStruct.TableName()+".last_time",
+				groupSub)
+
 		querySub = s.gormDb.Model(params.ModelStruct).Order("last_time desc").
 			Joins("inner join (?) as t2 using(id)", querySub)
+
+		totalSub = s.gormDb.Model(params.ModelStruct).Select("id").
+			Joins("inner join (?) as t2 using(id)", totalSub)
 
 		if len(params.SearchIndex) != 0 && len(params.SearchInput) != 0 {
 			for i, v := range params.SearchIndex {
 				if i == 0 {
 					querySub = querySub.Where(v+" LIKE ?", "%"+params.SearchInput+"%")
+					totalSub = totalSub.Where(v+" LIKE ?", "%"+params.SearchInput+"%")
 					continue
 				}
 				querySub = querySub.Or(v+" LIKE ?", "%"+params.SearchInput+"%")
+				totalSub = totalSub.Or(v+" LIKE ?", "%"+params.SearchInput+"%")
 			}
 		}
-		return querySub.Rows()
+
+		err = totalSub.Count(&total).Error
+		if err != nil {
+			return
+		}
+
+		sqlRow, err = querySub.Rows()
+		if err != nil {
+			return
+		}
+
+		return
+
 	default:
-		err := errors.New("the sort type does not exist")
+		err = errors.New("the sort type does not exist")
 		s.sulog.Infof("query objects with page from db failed, err:[%s]\n",
 			err.Error())
-		return nil, err
+		return
 	}
 }
 

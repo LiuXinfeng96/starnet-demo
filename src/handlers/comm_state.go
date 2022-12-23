@@ -138,7 +138,7 @@ func ExecGetCommStateList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "satellite_name")
 		}
 
-		sqlRows, err := s.QueryObjectsWithPage(params)
+		sqlRows, total, err := s.QueryObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -173,7 +173,7 @@ func ExecGetCommStateList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }
 
@@ -237,7 +237,7 @@ func TraceGetCommetState(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONResp(resp, c)
 	}
 }
 
@@ -292,7 +292,7 @@ func TraceGetCommStateList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "satellite_name")
 		}
 
-		sqlRows, err := s.QueryLatestObjectsWithPage(params)
+		sqlRows, total, err := s.QueryLatestObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -327,6 +327,6 @@ func TraceGetCommStateList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }

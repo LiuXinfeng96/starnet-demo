@@ -129,5 +129,7 @@ func LoadMonitorRouter(s *services.Server) {
 		routerGroup.GET("/getfaultinfo", handlers.MonitorGetFaultInfo(s))
 		routerGroup.GET("/getearlywarning", handlers.MonitorGetEarlWarning(s))
 		routerGroup.GET("/getchaininfo", handlers.MonitorGetChainInfo(s))
+		routerGroup.GET("/getlatestthreat", handlers.MonitorGetLatestThreat(s))
+		routerGroup.GET("/getlatestinstruction", handlers.MonitorGetLatestInstruction(s))
 	}
 }

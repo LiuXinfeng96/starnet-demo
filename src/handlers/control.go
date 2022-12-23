@@ -131,7 +131,7 @@ func ExecGetControlList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "satellite_name")
 		}
 
-		sqlRows, err := s.QueryObjectsWithPage(params)
+		sqlRows, total, err := s.QueryObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -163,7 +163,7 @@ func ExecGetControlList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }
 
@@ -223,7 +223,7 @@ func TraceGetControl(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONResp(resp, c)
 	}
 }
 
@@ -278,7 +278,7 @@ func TraceGetControlList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "satellite_name")
 		}
 
-		sqlRows, err := s.QueryLatestObjectsWithPage(params)
+		sqlRows, total, err := s.QueryLatestObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -310,6 +310,6 @@ func TraceGetControlList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }

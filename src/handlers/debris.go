@@ -132,7 +132,7 @@ func ControlGetDebrisList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "debris_name")
 		}
 
-		sqlRows, err := s.QueryObjectsWithPage(params)
+		sqlRows, total, err := s.QueryObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -167,7 +167,7 @@ func ControlGetDebrisList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }
 
@@ -229,7 +229,7 @@ func TraceGetDebris(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONResp(resp, c)
 	}
 }
 
@@ -535,7 +535,7 @@ func ExecGetDebrisList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "debris_name")
 		}
 
-		sqlRows, err := s.QueryObjectsWithPageSC(params)
+		sqlRows, total, err := s.QueryObjectsWithPageSC(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -569,7 +569,7 @@ func ExecGetDebrisList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }
 
@@ -624,7 +624,7 @@ func TraceGetDebrisList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "debris_name")
 		}
 
-		sqlRows, err := s.QueryLatestObjectsWithPage(params)
+		sqlRows, total, err := s.QueryLatestObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -658,6 +658,6 @@ func TraceGetDebrisList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }

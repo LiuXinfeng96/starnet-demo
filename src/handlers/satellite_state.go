@@ -137,7 +137,7 @@ func ExecGetSatelliteStateList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "orbit_id")
 		}
 
-		sqlRows, err := s.QueryObjectsWithPage(params)
+		sqlRows, total, err := s.QueryObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -170,7 +170,7 @@ func ExecGetSatelliteStateList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }
 
@@ -231,7 +231,7 @@ func TraceGetSatelliteState(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONResp(resp, c)
 	}
 }
 
@@ -287,7 +287,7 @@ func TraceGetSatelliteStateList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "orbit_id")
 		}
 
-		sqlRows, err := s.QueryLatestObjectsWithPage(params)
+		sqlRows, total, err := s.QueryLatestObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -320,6 +320,6 @@ func TraceGetSatelliteStateList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }

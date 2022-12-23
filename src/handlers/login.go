@@ -23,7 +23,7 @@ func JWTAuthMiddleware(s *services.Server) gin.HandlerFunc {
 
 		claims, err := s.ParseToken(token)
 		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
+			TokenErrorJSONResp(err.Error(), c)
 			c.Abort()
 			return
 		}
@@ -241,7 +241,7 @@ func ControlGetLoginLogList(s *services.Server) gin.HandlerFunc {
 			SearchIndex: make([]string, 0),
 		}
 
-		sqlRows, err := s.QueryObjectsWithPage(params)
+		sqlRows, total, err := s.QueryObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -271,6 +271,6 @@ func ControlGetLoginLogList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }

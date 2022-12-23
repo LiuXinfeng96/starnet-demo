@@ -270,7 +270,7 @@ func ControlGetInstructionList(s *services.Server) gin.HandlerFunc {
 
 		params.QueryMap["exec_state"] = strconv.Itoa(int(db.NOTEXEC))
 
-		sqlRows, err := s.QueryObjectsWithPage(params)
+		sqlRows, total, err := s.QueryObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -307,7 +307,7 @@ func ControlGetInstructionList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }
 
@@ -372,7 +372,7 @@ func TraceGetInstruction(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONResp(resp, c)
 	}
 }
 
@@ -425,7 +425,7 @@ func ControlGetExecResultList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "instruction_id")
 		}
 
-		sqlRows, err := s.QueryObjectsWithPage(params)
+		sqlRows, total, err := s.QueryObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -465,7 +465,7 @@ func ControlGetExecResultList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }
 
@@ -574,7 +574,7 @@ func ExecGetInstructionList(s *services.Server) gin.HandlerFunc {
 
 		params.QueryMap["exec_state"] = strconv.Itoa(int(db.NOTEXEC))
 
-		sqlRows, err := s.QueryObjectsWithPageSC(params)
+		sqlRows, total, err := s.QueryObjectsWithPageSC(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -611,7 +611,7 @@ func ExecGetInstructionList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }
 
@@ -722,7 +722,7 @@ func ExecGetExecResultList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "instruction_id")
 		}
 
-		sqlRows, err := s.QueryObjectsWithPageSC(params)
+		sqlRows, total, err := s.QueryObjectsWithPageSC(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -762,7 +762,7 @@ func ExecGetExecResultList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }
 
@@ -869,7 +869,7 @@ func TraceGetInstructionList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "instruction_id")
 		}
 
-		sqlRows, err := s.QueryLatestObjectsWithPage(params)
+		sqlRows, total, err := s.QueryLatestObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -906,6 +906,6 @@ func TraceGetInstructionList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }

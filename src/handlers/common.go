@@ -44,13 +44,13 @@ func SuccessfulJSONResp(data interface{}, c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func SuccessfulJSONRespWithPage(data interface{}, total int, c *gin.Context) {
+func SuccessfulJSONRespWithPage(data interface{}, total int64, c *gin.Context) {
 	resp := models.StandardRespWithPage{
 		StandardResp: models.StandardResp{
 			Code: models.RESP_CODE_SUCCESS,
 			Data: data,
 		},
-		Total: int32(total),
+		Total: total,
 	}
 	c.JSON(http.StatusOK, resp)
 }
@@ -149,6 +149,15 @@ func PutChainFailJSONResp(err string, c *gin.Context) {
 	resp := models.StandardResp{
 		Code: models.RESP_CODE_CHAIN_PUT_FAIL,
 		Msg:  models.RESP_MSG_CHAIN_PUT_FAIL,
+		Data: err,
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+func TokenErrorJSONResp(err string, c *gin.Context) {
+	resp := models.StandardResp{
+		Code: models.RESP_CODE_TOKEN_ERROR,
+		Msg:  models.RESP_MSG_TOKEN_ERROR,
 		Data: err,
 	}
 	c.JSON(http.StatusOK, resp)

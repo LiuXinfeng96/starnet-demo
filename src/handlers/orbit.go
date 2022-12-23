@@ -119,7 +119,7 @@ func ControlGetOrbitList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "orbit_id")
 		}
 
-		sqlRows, err := s.QueryObjectsWithPage(params)
+		sqlRows, total, err := s.QueryObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -153,6 +153,6 @@ func ControlGetOrbitList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }

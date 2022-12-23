@@ -6,6 +6,7 @@ import (
 	"starnet-demo/src/models"
 	"starnet-demo/src/services"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -62,13 +63,14 @@ func ExecAddFault(s *services.Server) gin.HandlerFunc {
 		// 1. 故障信息上星座链
 		// 2. 入库
 
+		faultTime := time.Now().Unix()
 		fault := &db.Fault{
 			SatelliteId:      req.SatelliteId,
 			SatelliteName:    req.SatelliteName,
 			OrbitId:          req.OrbitId,
 			FaultType:        faultType,
 			FaultDescription: req.FaultDescription,
-			FaultTime:        req.FaultTime,
+			FaultTime:        faultTime,
 			RepairState:      repairState,
 			BlockChainField: db.BlockChainField{
 				ChainId: s.GetExecChainId(),
@@ -144,7 +146,7 @@ func ExecGetFaultList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "satellite_name")
 		}
 
-		sqlRows, err := s.QueryObjectsWithPage(params)
+		sqlRows, total, err := s.QueryObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -178,7 +180,7 @@ func ExecGetFaultList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }
 
@@ -240,7 +242,7 @@ func TraceGetFault(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONResp(resp, c)
 	}
 }
 
@@ -295,7 +297,7 @@ func TraceGetFaultList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "satellite_name")
 		}
 
-		sqlRows, err := s.QueryLatestObjectsWithPage(params)
+		sqlRows, total, err := s.QueryLatestObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -329,6 +331,6 @@ func TraceGetFaultList(s *services.Server) gin.HandlerFunc {
 			})
 		}
 
-		SuccessfulJSONRespWithPage(resp, len(resp), c)
+		SuccessfulJSONRespWithPage(resp, total, c)
 	}
 }

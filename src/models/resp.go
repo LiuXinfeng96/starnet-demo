@@ -8,7 +8,7 @@ type StandardResp struct {
 
 type StandardRespWithPage struct {
 	StandardResp
-	Total int32 `json:"total"`
+	Total int64 `json:"total"`
 }
 
 const (
@@ -34,6 +34,8 @@ const (
 
 	RESP_CODE_NOT_IN_CHAIN = 302
 
+	RESP_CODE_TOKEN_ERROR = 303
+
 	RESP_CODE_CHAIN_PUT_FAIL = 600
 )
 
@@ -57,6 +59,8 @@ const (
 	RESP_MSG_PWD_ERROR = "密码错误"
 
 	RESP_MSG_NOT_IN_CHAIN = "不属于链上用户，无法操作链"
+
+	RESP_MSG_TOKEN_ERROR = "请重新登录"
 
 	RESP_MSG_CHAIN_PUT_FAIL = "上链失败"
 )
@@ -297,8 +301,11 @@ type EarlyWarningInfo struct {
 }
 
 type ChainInfo struct {
-	NodeNum     int32  `json:"nodeNum"`
+	NodeNum     int    `json:"nodeNum"`
 	BlockHeight uint64 `json:"blockHeight"`
 	ChainName   string `json:"chainName"`
-	TxNum       int32  `json:"txNum"`
+}
+
+type LatestInfo struct {
+	IsLatest bool `json:"isLatest"`
 }

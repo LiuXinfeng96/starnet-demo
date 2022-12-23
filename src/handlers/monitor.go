@@ -4,6 +4,8 @@ import (
 	"starnet-demo/src/db"
 	"starnet-demo/src/models"
 	"starnet-demo/src/services"
+	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -287,28 +289,94 @@ func MonitorGetChainInfo(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		var masterChainInfo models.ChainInfo
-		masterChainInfo.BlockHeight, err = masterClient.GetCurrentBlockHeight()
+		mInfo, err := masterClient.GetChainInfo()
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
 		}
-
+		var masterChainInfo models.ChainInfo
 		masterChainInfo.ChainName = "主链"
+		masterChainInfo.BlockHeight = mInfo.BlockHeight
+		masterChainInfo.NodeNum = len(mInfo.NodeList)
+
+		eInfo, err := execClient.GetChainInfo()
+		if err != nil {
+			ServerErrorJSONResp(err.Error(), c)
+			return
+		}
 
 		var execChainInfo models.ChainInfo
-		execChainInfo.BlockHeight, err = execClient.GetCurrentBlockHeight()
-		if err != nil {
-			ServerErrorJSONResp(err.Error(), c)
-			return
-		}
-
 		execChainInfo.ChainName = "星座链"
+		execChainInfo.BlockHeight = eInfo.BlockHeight
+		execChainInfo.NodeNum = len(eInfo.NodeList)
 
 		resp = append(resp, &masterChainInfo)
 		resp = append(resp, &execChainInfo)
 
 		SuccessfulJSONResp(resp, c)
 
+	}
+}
+
+func MonitorGetLatestThreat(s *services.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		latestTimeStr := c.Query("latestTime")
+
+		err := isStringRequiredParamsEmpty(latestTimeStr)
+		if err != nil {
+			ParamsMissingJSONResp(err.Error(), c)
+			return
+		}
+
+		latestTime, err := strconv.Atoi(latestTimeStr)
+		if err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		time := time.UnixMilli(int64(latestTime)).Add(time.Second * (-6)).UnixMilli()
+
+		var instruction db.Instruction
+		var resp models.LatestInfo
+		err = s.GetGormObject().Model(&db.Instruction{}).Select("id").
+			Where("exec_state = ? AND last_time >= ?", db.NOTEXEC, time).
+			Where("treaten = ? OR treaten = ?", db.LOW, db.HIGH).
+			First(&instruction).Error
+		if err == nil {
+			resp.IsLatest = true
+		}
+
+		SuccessfulJSONResp(resp, c)
+	}
+}
+
+func MonitorGetLatestInstruction(s *services.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		latestTimeStr := c.Query("latestTime")
+
+		err := isStringRequiredParamsEmpty(latestTimeStr)
+		if err != nil {
+			ParamsMissingJSONResp(err.Error(), c)
+			return
+		}
+
+		latestTime, err := strconv.Atoi(latestTimeStr)
+		if err != nil {
+			ParamsTypeErrorJSONResp(err.Error(), c)
+			return
+		}
+
+		time := time.UnixMilli(int64(latestTime)).Add(time.Second * (-6)).UnixMilli()
+
+		var instruction db.Instruction
+		var resp models.LatestInfo
+		err = s.GetGormObject().Model(&db.Instruction{}).Select("id").
+			Where("type = ? AND exec_state = ? AND last_time >= ?", db.OPERATION, db.NOTEXEC, time).
+			First(&instruction).Error
+		if err == nil {
+			resp.IsLatest = true
+		}
+
+		SuccessfulJSONResp(resp, c)
 	}
 }
