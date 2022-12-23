@@ -23,13 +23,13 @@ func DebrisConvert(debris *db.Debris) []*common.KeyValuePair {
 			Value: []byte(strconv.FormatFloat(debris.Angle, 'f', 10, 64)),
 		}, &common.KeyValuePair{
 			Key:   "speed",
-			Value: []byte(strconv.FormatFloat(debris.Angle, 'f', 10, 64)),
+			Value: []byte(strconv.FormatFloat(debris.Speed, 'f', 10, 64)),
 		}, &common.KeyValuePair{
 			Key:   "height",
-			Value: []byte(strconv.FormatFloat(debris.Angle, 'f', 10, 64)),
+			Value: []byte(strconv.FormatFloat(debris.Height, 'f', 10, 64)),
 		}, &common.KeyValuePair{
 			Key:   "volume",
-			Value: []byte(strconv.FormatFloat(debris.Angle, 'f', 10, 64)),
+			Value: []byte(strconv.FormatFloat(debris.Volunme, 'f', 10, 64)),
 		}, &common.KeyValuePair{
 			Key:   "debrisType",
 			Value: []byte(db.DebrisTypeName[debris.Type]),
@@ -327,6 +327,7 @@ func InstructionContractRespConvert(icp *models.InstructionContractResp, source,
 			SatelliteId:        v.SatelliteId,
 			SatelliteName:      v.SatelliteName,
 			ExecState:          db.NOTEXEC,
+			GenInstructionTime: time.Now().Unix(),
 			BlockChainField: db.BlockChainField{
 				ChainId:     chainId,
 				BlockHeight: icp.BlockHeight,

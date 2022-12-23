@@ -31,8 +31,8 @@ block_chain_config:
 
 master_contract: 
   name: masterC
-  chain_id: masterchain
+  chain_id: chain_dcwjj
 
 exec_contract: 
   name: execC
-  chain_id: execchain
+  chain_id: chain_dcwjc

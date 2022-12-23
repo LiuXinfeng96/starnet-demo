@@ -186,7 +186,8 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 
 		operation = &db.Operation{
 			Operator:        claims.Name,
-			OperationTime:   genInstructionTime,
+			OperationTime:   execInstructionTime,
+			OperatorIp:      c.ClientIP(),
 			SatelliteId:     req.SatelliteId,
 			SatelliteName:   req.SatelliteName,
 			OperationRecord: "执行指令：" + req.InstructionId,

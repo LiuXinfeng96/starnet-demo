@@ -360,19 +360,6 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 				return
 			}
 
-			for _, v := range instructions {
-				v.BlockHeight = irs.BlockHeight
-				v.TxId = irs.TxId
-				v.ChainTime = chainTime
-				err = s.UpdateObject(v)
-				if err != nil {
-					s.GetSuLogger().Warnf("invoke gen instruction update object failed, err: [%s]\n",
-						err.Error())
-					return
-				}
-
-			}
-
 			// 碎片信息和指令信息上主链
 			go func() {
 				go s.SendTxToBlockChain(s.GetMasterContractName(),
@@ -469,7 +456,7 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 				operation := &db.Operation{
 					Operator:        claims.Name,
 					OperatorIp:      c.ClientIP(),
-					OperationTime:   v.ExecInstructionTime,
+					OperationTime:   execInstructionTime,
 					OperationRecord: "执行指令：" + v.InstructionId,
 					SatelliteId:     v.SatelliteId,
 					SatelliteName:   v.SatelliteName,
