@@ -30,7 +30,7 @@ fi
 
 i=$(docker ps -a | grep "starnet-demo" | awk '{print $1}')
 if test ! -z $i; then
-echo "the container already exists, delete..."
+echo "the server container already exists, delete..."
 docker rm -f starnet-demo
 fi
 
@@ -48,3 +48,21 @@ bash -c "cd src&&./starnet-demo -config ../conf/system_config.yaml"
 sleep 2s
 docker logs starnet-demo
 echo "the starnet demo server has been started!"
+
+
+i=$(docker ps -a | grep "starnet-web" | awk '{print $1}')
+if test ! -z $i; then
+echo "the web container already exists, delete..."
+docker rm -f starnet-web
+fi
+
+echo "start starnet demo web server..."
+chmod -R 777 $path/web/
+docker run -d \
+-p 8087:80 \
+-v $path/web/conf.d:/etc/nginx/conf.d \
+-v $path/web/resources:/usr/share/nginx/resources \
+--name starnet-web \
+--restart always \
+nginx:1.23.3
+echo "the starnet demo web server has been started!"
