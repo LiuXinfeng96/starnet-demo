@@ -1,0 +1,12 @@
+FROM golang:1.17.13 as builder
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GONOSUMDB=chainmaker.org
+COPY . /starnet-demo
+RUN cd /starnet-demo/src && go build -o starnet-demo
+
+FROM ubuntu:20.04
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+COPY --from=builder /starnet-demo/src/starnet-demo /starnet-demo/src/starnet-demo
+WORKDIR /starnet-demo
+VOLUME [ "/starnet-demo/log" ,"/starnet-demo/crypto-config" ,"/starnet-demo/conf"]
