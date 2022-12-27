@@ -433,7 +433,7 @@ func ControlGetExecResultList(s *services.Server) gin.HandlerFunc {
 
 		defer sqlRows.Close()
 
-		resp := make([]*models.InstructionResultInfo, 0)
+		resp := make([]*models.InstructionDetails, 0)
 
 		for sqlRows.Next() {
 			var instruction db.Instruction
@@ -443,7 +443,7 @@ func ControlGetExecResultList(s *services.Server) gin.HandlerFunc {
 				return
 			}
 
-			resp = append(resp, &models.InstructionResultInfo{
+			resp = append(resp, &models.InstructionDetails{
 				InstructionInfo: models.InstructionInfo{
 					InstructionId:       instruction.InstructionId,
 					InstructionSource:   instruction.InstructionSource,
@@ -499,7 +499,7 @@ func ControlGetExecResult(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		SuccessfulJSONResp(&models.InstructionResultInfo{
+		SuccessfulJSONResp(&models.InstructionDetails{
 			ExecState: db.ExecStateName[instruction.ExecState],
 			InstructionInfo: models.InstructionInfo{
 				InstructionId:       instruction.InstructionId,
@@ -517,6 +517,11 @@ func ControlGetExecResult(s *services.Server) gin.HandlerFunc {
 					LastTime:  instruction.LastTime,
 					ChainTime: instruction.ChainTime,
 				},
+			},
+			HistoryRespInfo: models.HistoryRespInfo{
+				ChainId:     instruction.ChainId,
+				BlockHeight: instruction.BlockHeight,
+				TxId:        instruction.TxId,
 			},
 		}, c)
 	}
@@ -722,7 +727,7 @@ func ExecGetExecResultList(s *services.Server) gin.HandlerFunc {
 			params.SearchIndex = append(params.SearchIndex, "instruction_id")
 		}
 
-		sqlRows, total, err := s.QueryObjectsWithPageSC(params)
+		sqlRows, total, err := s.QueryObjectsWithPage(params)
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
 			return
@@ -730,7 +735,7 @@ func ExecGetExecResultList(s *services.Server) gin.HandlerFunc {
 
 		defer sqlRows.Close()
 
-		resp := make([]*models.InstructionResultInfo, 0)
+		resp := make([]*models.InstructionDetails, 0)
 
 		for sqlRows.Next() {
 			var instruction db.Instruction
@@ -740,7 +745,7 @@ func ExecGetExecResultList(s *services.Server) gin.HandlerFunc {
 				return
 			}
 
-			resp = append(resp, &models.InstructionResultInfo{
+			resp = append(resp, &models.InstructionDetails{
 				InstructionInfo: models.InstructionInfo{
 					InstructionId:       instruction.InstructionId,
 					InstructionSource:   instruction.InstructionSource,
@@ -796,7 +801,7 @@ func ExecGetExecResult(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		SuccessfulJSONResp(&models.InstructionResultInfo{
+		SuccessfulJSONResp(&models.InstructionDetails{
 			ExecState: db.ExecStateName[instruction.ExecState],
 			InstructionInfo: models.InstructionInfo{
 				InstructionId:       instruction.InstructionId,
@@ -814,6 +819,11 @@ func ExecGetExecResult(s *services.Server) gin.HandlerFunc {
 					LastTime:  instruction.LastTime,
 					ChainTime: instruction.ChainTime,
 				},
+			},
+			HistoryRespInfo: models.HistoryRespInfo{
+				ChainId:     instruction.ChainId,
+				BlockHeight: instruction.BlockHeight,
+				TxId:        instruction.TxId,
 			},
 		}, c)
 	}

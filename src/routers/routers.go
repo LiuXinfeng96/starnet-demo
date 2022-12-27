@@ -131,5 +131,6 @@ func LoadMonitorRouter(s *services.Server) {
 		routerGroup.GET("/getchaininfo", handlers.MonitorGetChainInfo(s))
 		routerGroup.GET("/getlatestthreat", handlers.MonitorGetLatestThreat(s))
 		routerGroup.GET("/getlatestinstruction", handlers.MonitorGetLatestInstruction(s))
+		routerGroup.GET("/getserverlasttime", handlers.MonitorGetLastTime(s))
 	}
 }

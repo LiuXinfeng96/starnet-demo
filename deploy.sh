@@ -17,7 +17,7 @@ c=$(docker ps -a | grep "starnet-mysql" | awk '{print $1}')
 if test -z $c; then
 echo "not found the mysql server, start mysql server..."
 docker run -d \
-    -p 13306:3306 \
+    -p 3306:3306 \
     -e MYSQL_ROOT_PASSWORD=123456 \
     -e MYSQL_DATABASE=chainmaker \
     --name starnet-mysql \
@@ -36,7 +36,7 @@ fi
 
 echo "start starnet demo server..."
 docker run -d \
--p 8096:8096 \
+-p 8086:8086 \
 -w /starnet-demo \
 -v $path/conf:/starnet-demo/conf \
 -v $path/log:/starnet-demo/log \
@@ -59,7 +59,7 @@ fi
 echo "start starnet demo web server..."
 chmod -R 777 $path/web/
 docker run -d \
--p 8087:80 \
+-p 80:80 \
 -v $path/web/conf.d:/etc/nginx/conf.d \
 -v $path/web/resources:/usr/share/nginx/resources \
 --name starnet-web \

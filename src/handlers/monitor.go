@@ -258,10 +258,10 @@ func MonitorGetEarlWarning(s *services.Server) gin.HandlerFunc {
 
 		gormDB := s.GetGormObject()
 		err := gormDB.Model(&db.Instruction{}).
-			Select("instruction.debris_id, instruction.debris_name, instruction.debris_name, "+
+			Select("instruction.debris_id, instruction.debris_name, instruction.treaten, "+
 				"instruction.satellite_name, instruction.satellite_id, debris.speed, debris.height").
 			Joins("inner join debris on debris.debris_id = instruction.debris_id").
-			Where("instruction.treaten = ? OR instruction.treaten = ? AND instruction.exec_state = ?", db.LOW, db.HIGH, db.NOTEXEC).
+			Where("(instruction.treaten = ? OR instruction.treaten = ?) AND instruction.exec_state = ?", db.LOW, db.HIGH, db.NOTEXEC).
 			Order("instruction.last_time desc").Limit(20).Find(&resp).Error
 		if err != nil {
 			ServerErrorJSONResp(err.Error(), c)
@@ -334,13 +334,13 @@ func MonitorGetLatestThreat(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		time := time.UnixMilli(int64(latestTime)).Add(time.Second * (-6)).UnixMilli()
+		time := time.UnixMilli(int64(latestTime)).Add(time.Second * (-10)).UnixMilli()
 
 		var instruction db.Instruction
 		var resp models.LatestInfo
 		err = s.GetGormObject().Model(&db.Instruction{}).Select("id").
 			Where("exec_state = ? AND last_time >= ?", db.NOTEXEC, time).
-			Where("treaten = ? OR treaten = ?", db.LOW, db.HIGH).
+			Where("treaten = ?", db.HIGH).
 			First(&instruction).Error
 		if err == nil {
 			resp.IsLatest = true
@@ -366,7 +366,7 @@ func MonitorGetLatestInstruction(s *services.Server) gin.HandlerFunc {
 			return
 		}
 
-		time := time.UnixMilli(int64(latestTime)).Add(time.Second * (-6)).UnixMilli()
+		time := time.UnixMilli(int64(latestTime)).Add(time.Second * (-10)).UnixMilli()
 
 		var instruction db.Instruction
 		var resp models.LatestInfo
@@ -376,6 +376,18 @@ func MonitorGetLatestInstruction(s *services.Server) gin.HandlerFunc {
 		if err == nil {
 			resp.IsLatest = true
 		}
+
+		SuccessfulJSONResp(resp, c)
+	}
+}
+
+func MonitorGetLastTime(s *services.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		time := time.Now().UnixMilli()
+
+		var resp models.LastTime
+
+		resp.LastTime = time
 
 		SuccessfulJSONResp(resp, c)
 	}

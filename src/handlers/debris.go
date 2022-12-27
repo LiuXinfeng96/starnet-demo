@@ -295,13 +295,14 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 		// - 构造避障操作日志交易发送至星座链，上链成功后存至数据库
 
 		debirs := &db.Debris{
-			DebrisId:   req.DebrisId,
-			DebrisName: req.DebrisName,
-			Angle:      req.Angle,
-			Speed:      req.Speed,
-			Height:     req.Height,
-			Volunme:    req.Volume,
-			Type:       debrisType,
+			DebrisId:     req.DebrisId,
+			DebrisName:   req.DebrisName,
+			Angle:        req.Angle,
+			Speed:        req.Speed,
+			Height:       req.Height,
+			Volunme:      req.Volume,
+			Type:         debrisType,
+			DebrisSource: "自主发现",
 			BlockChainField: db.BlockChainField{
 				ChainId: s.GetExecChainId(),
 			},
@@ -643,13 +644,14 @@ func TraceGetDebrisList(s *services.Server) gin.HandlerFunc {
 			}
 
 			resp = append(resp, &models.DebrisInfo{
-				DebrisId:   debris.DebrisId,
-				DebrisName: debris.DebrisName,
-				Angle:      debris.Angle,
-				Speed:      debris.Speed,
-				Height:     debris.Height,
-				Volume:     debris.Volunme,
-				Type:       db.DebrisTypeName[debris.Type],
+				DebrisId:     debris.DebrisId,
+				DebrisName:   debris.DebrisName,
+				DebrisSource: debris.DebrisSource,
+				Angle:        debris.Angle,
+				Speed:        debris.Speed,
+				Height:       debris.Height,
+				Volume:       debris.Volunme,
+				Type:         db.DebrisTypeName[debris.Type],
 				BaseRespInfo: models.BaseRespInfo{
 					Id:        debris.Id,
 					LastTime:  debris.LastTime,

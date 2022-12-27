@@ -1,6 +1,6 @@
 /*! 
  Build based on gin-vue-admin 
- Time : 1671785957000 */
+ Time : 1672137460000 */
 var e,n,r,l,t,s,c={exports:{}};
 /*!
 * screenfull

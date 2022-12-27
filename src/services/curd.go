@@ -303,7 +303,6 @@ func (s *Server) QueryOneObjectWithLatest(modelStruct db.ModelStruct,
 		groupSub)
 
 	return querySub.Rows()
-
 }
 
 func (s *Server) GetTableDataCount(model db.ModelStruct, count *int64) error {

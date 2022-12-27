@@ -1,4 +1,4 @@
-server_port: 8096
+server_port: 8086
 
 log_config:
   log_level: INFO
@@ -15,8 +15,8 @@ log_config:
 db_config:
   user: root
   password: 123456
-  ip: 172.16.2.225
-  port: 13306
+  ip: 127.0.0.1
+  port: 3306
   dbname: chainmaker
 
 

@@ -131,11 +131,6 @@ type InstructionDetails struct {
 	HistoryRespInfo
 }
 
-type InstructionResultInfo struct {
-	InstructionInfo
-	ExecState string `json:"execState"`
-}
-
 type OrbitInfo struct {
 	BaseRespInfo
 	OrbitId                string  `json:"orbitId"`
@@ -295,7 +290,7 @@ type EarlyWarningInfo struct {
 	DebrisName    string  `json:"debrisName"`
 	Speed         float64 `json:"speed"`
 	Height        float64 `json:"height"`
-	Threaten      int32   `json:"threaten"`
+	Treaten       int32   `json:"threaten"`
 	SatelliteName string  `json:"satelliteName"`
 	SatelliteId   string  `json:"satelliteId"`
 }
@@ -308,4 +303,8 @@ type ChainInfo struct {
 
 type LatestInfo struct {
 	IsLatest bool `json:"isLatest"`
+}
+
+type LastTime struct {
+	LastTime int64 `json:"serverLastTime"`
 }
