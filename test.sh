@@ -14,7 +14,7 @@ debrisId=$(uuidgen | sed 's/-//g')
 debrisName="碎片${i}"
 angle=`expr $RANDOM / 10`
 speed=`expr $RANDOM / 10`
-height=`expr $RANDOM / 10`
+height=`expr $RANDOM / 100`
 volume=`expr $RANDOM / 10`
 type="Small"
 
@@ -25,7 +25,7 @@ curl -H "Content-Type: application/json" \
 http://localhost:8086/satellitebc/exec/adddebris
 
 i=`expr $i + 1`
-sleep 10s
+sleep 5s
 done
 
 	

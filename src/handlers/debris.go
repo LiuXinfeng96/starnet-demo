@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"starnet-demo/src/contract"
 	"starnet-demo/src/db"
@@ -319,20 +320,47 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 		// 碎片信息和指令信息上星座链
 		go func() {
 			resp, err := execClient.InvokeContract(s.GetExecContractName(),
-				contract.EXEC_CONTRACT_FUNC_NAME_GEN_INSTRUCTION, "", debirsKvs, -1, true)
+				contract.EXEC_CONTRACT_FUNC_NAME_GEN_INSTRUCTION, "", debirsKvs, -1, false)
 			if err != nil {
 				s.GetSuLogger().Warnf("invoke gen instruction func failed, err: [%s]\n",
 					err.Error())
 				return
 			}
+
 			if resp.Code != common.TxStatusCode_SUCCESS {
 				s.GetSuLogger().Warnf("invoke gen instruction resp no success, code: [%d], msg: [%s]",
 					resp.Code, resp.Message)
 				return
 			}
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+			defer cancel()
+			txChan, err := execClient.SubscribeTx(ctx, -1, -1, s.GetExecContractName(), []string{resp.TxId})
+			if err != nil {
+				s.GetSuLogger().Warnf("subscribe the tx failed, err: [%s], txId: [%s]\n",
+					err.Error(), resp.TxId)
+				return
+			}
+
+			var result []byte
+			select {
+			case data, ok := <-txChan:
+				if !ok {
+					s.GetSuLogger().Warnf("subscribe the tx failed, err: tx chan has been closed\n")
+					return
+				}
+				tx, ok := data.(*common.Transaction)
+				if !ok {
+					s.GetSuLogger().Warnf("subscribe the tx failed, err: the data type error\n")
+					return
+				}
+				result = tx.Result.ContractResult.Result
+			case <-ctx.Done():
+				s.GetSuLogger().Warnf("subscribe the tx failed, err: subscribe timeout\n")
+				return
+			}
 
 			var irs *models.InstructionContractResp
-			err = json.Unmarshal(resp.ContractResult.Result, &irs)
+			err = json.Unmarshal(result, &irs)
 			if err != nil {
 				s.GetSuLogger().Warnf("invoke gen instruction unmarshal resp failed, err: [%s]\n",
 					err.Error())

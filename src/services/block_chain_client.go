@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"starnet-demo/src/db"
@@ -125,6 +126,8 @@ func (s *Server) InitChainClient() {
 	execClient, err := sdk.NewChainClient(
 		sdk.WithConfPath(s.config.BCConfig[1].SdkConfigPath),
 		sdk.WithChainClientLogger(s.sulog),
+		sdk.WithRetryLimit(20),
+		sdk.WithRetryInterval(1000),
 	)
 	if err != nil {
 		panic(err)
@@ -160,7 +163,7 @@ func (s *Server) SendTxToBlockChain(contractName, funcName string, client *sdk.C
 	i := 0
 	for {
 		resp, err := client.InvokeContract(contractName,
-			funcName, "", kvs, -1, true)
+			funcName, "", kvs, -1, false)
 		if err != nil {
 			s.GetSuLogger().Warnf("send tx to the chain failed: [%s]\n", err.Error())
 			if i < s.retryTime {
@@ -180,10 +183,36 @@ func (s *Server) SendTxToBlockChain(contractName, funcName string, client *sdk.C
 		}
 
 		if blockChainField != nil {
-			*blockChainField, err = s.getBlockChainFiledFromResp(resp.ContractResult)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+			defer cancel()
+			txChan, err := client.SubscribeTx(ctx, -1, -1, contractName, []string{resp.TxId})
+			if err != nil {
+				s.GetSuLogger().Warnf("subscribe the tx failed, err: [%s], txId: [%s]\n",
+					err.Error(), resp.TxId)
+				return
+			}
+
+			var result *common.ContractResult
+			select {
+			case data, ok := <-txChan:
+				if !ok {
+					s.GetSuLogger().Warnf("subscribe the tx failed, err: tx chan has been closed\n")
+					return
+				}
+				tx, ok := data.(*common.Transaction)
+				if !ok {
+					s.GetSuLogger().Warnf("subscribe the tx failed, err: the data type error\n")
+					return
+				}
+				result = tx.Result.ContractResult
+			case <-ctx.Done():
+				s.GetSuLogger().Warnf("subscribe the tx failed, err: subscribe timeout\n")
+				return
+			}
+			*blockChainField, err = s.getBlockChainFiledFromResp(result)
 			if err != nil {
 				s.GetSuLogger().Warnf("get block chain info from contract resp failed, err: [%s], result: [%+v]",
-					err.Error(), resp.ContractResult)
+					err.Error(), result)
 				return
 			}
 		}
