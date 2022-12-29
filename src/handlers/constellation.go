@@ -58,9 +58,6 @@ func ControlAddConstellation(s *services.Server) gin.HandlerFunc {
 			SatelliteTotalNum:  req.SatelliteTotalNum,
 			SatelliteUpNum:     req.SatelliteUpNum,
 			SatelliteDownNum:   req.SatelliteDownNum,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetMasterChainId(),
-			},
 		}
 
 		err = s.InsertOneObjertToDB(constellation)

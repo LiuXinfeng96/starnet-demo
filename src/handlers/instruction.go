@@ -69,9 +69,6 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			SatelliteId:        req.SatelliteId,
 			SatelliteName:      req.SatelliteName,
 			GenInstructionTime: genInstructionTime,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetMasterChainId(),
-			},
 		}
 		// 未执行指令信息入库
 		err = s.InsertOneObjertToDB(noExecI)
@@ -93,9 +90,6 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			SatelliteId:     req.SatelliteId,
 			SatelliteName:   req.SatelliteName,
 			OperationRecord: "编辑指令：" + req.InstructionId,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetMasterChainId(),
-			},
 		}
 
 		// 编辑操作入库
@@ -124,9 +118,6 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			SatelliteName:       req.SatelliteName,
 			GenInstructionTime:  genInstructionTime,
 			ExecInstructionTime: execInstructionTime,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetMasterChainId(),
-			},
 		}
 		// 执行指令入库
 		err = s.InsertOneObjertToDB(inExecI)
@@ -160,9 +151,6 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			SatelliteName:       req.SatelliteName,
 			GenInstructionTime:  genInstructionTime,
 			ExecInstructionTime: execInstructionTime,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetMasterChainId(),
-			},
 		}
 
 		// 执行结果入库
@@ -191,9 +179,6 @@ func ControlAddInstruction(s *services.Server) gin.HandlerFunc {
 			SatelliteId:     req.SatelliteId,
 			SatelliteName:   req.SatelliteName,
 			OperationRecord: "执行指令：" + req.InstructionId,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetMasterChainId(),
-			},
 		}
 
 		// 执行操作入库

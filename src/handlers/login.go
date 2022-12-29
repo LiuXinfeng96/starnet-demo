@@ -72,9 +72,6 @@ func Login(s *services.Server) gin.HandlerFunc {
 			UserName:  user.UserName,
 			LoginIp:   c.ClientIP(),
 			LoginTime: time.Now().Unix(),
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetMasterChainId(),
-			},
 		}
 
 		err = s.InsertOneObjertToDB(loginLog)

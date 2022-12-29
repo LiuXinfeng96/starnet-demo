@@ -1,0 +1,4 @@
+/*! 
+ Build based on gin-vue-admin 
+ Time : 1672224415000 */
+System.register(["./index-legacy.763f76da.js"],(function(t,e){"use strict";var u;return{setters:[function(t){u=t.s}],execute:function(){t("g",(function(t){return u({url:"/menu/getMenuList",method:"post",data:t})})),t("e",(function(t){return u({url:"/menu/addBaseMenu",method:"post",data:t})})),t("a",(function(){return u({url:"/menu/getBaseMenuTree",method:"post"})})),t("c",(function(t){return u({url:"/menu/addMenuAuthority",method:"post",data:t})})),t("b",(function(t){return u({url:"/menu/getMenuAuthority",method:"post",data:t})})),t("d",(function(t){return u({url:"/menu/deleteBaseMenu",method:"post",data:t})})),t("u",(function(t){return u({url:"/menu/updateBaseMenu",method:"post",data:t})})),t("f",(function(t){return u({url:"/menu/getBaseMenuById",method:"post",data:t})}))}}}));

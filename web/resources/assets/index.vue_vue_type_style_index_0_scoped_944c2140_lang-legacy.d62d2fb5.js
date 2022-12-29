@@ -1,6 +1,6 @@
 /*! 
  Build based on gin-vue-admin 
- Time : 1672137460000 */
+ Time : 1672224415000 */
 System.register([],(function(e,n){"use strict";var r=document.createElement("style");return r.textContent=".screenfull-svg[data-v-944c2140]{width:16px;height:16px;cursor:pointer;vertical-align:middle;margin-right:32px;fill:rgba(0,0,0,.45)}\n",document.head.appendChild(r),{execute:function(){var n={exports:{}};
 /*!
 			* screenfull

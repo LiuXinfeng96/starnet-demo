@@ -192,27 +192,26 @@ func (s *Server) SendTxToBlockChain(contractName, funcName string, client *sdk.C
 				return
 			}
 
-			var result *common.ContractResult
+			var tx *common.Transaction
 			select {
 			case data, ok := <-txChan:
 				if !ok {
 					s.GetSuLogger().Warnf("subscribe the tx failed, err: tx chan has been closed\n")
 					return
 				}
-				tx, ok := data.(*common.Transaction)
+				tx, ok = data.(*common.Transaction)
 				if !ok {
 					s.GetSuLogger().Warnf("subscribe the tx failed, err: the data type error\n")
 					return
 				}
-				result = tx.Result.ContractResult
 			case <-ctx.Done():
 				s.GetSuLogger().Warnf("subscribe the tx failed, err: subscribe timeout\n")
 				return
 			}
-			*blockChainField, err = s.getBlockChainFiledFromResp(result)
+			*blockChainField, err = s.getBlockChainFiledFromResp(tx)
 			if err != nil {
-				s.GetSuLogger().Warnf("get block chain info from contract resp failed, err: [%s], result: [%+v]",
-					err.Error(), result)
+				s.GetSuLogger().Warnf("get block chain info from tx failed, err: [%s], tx: [%+v]",
+					err.Error(), tx)
 				return
 			}
 		}
@@ -226,15 +225,16 @@ func (s *Server) SendTxToBlockChain(contractName, funcName string, client *sdk.C
 
 }
 
-func (s *Server) getBlockChainFiledFromResp(cr *common.ContractResult) (db.BlockChainField, error) {
+func (s *Server) getBlockChainFiledFromResp(tx *common.Transaction) (db.BlockChainField, error) {
 	var resp models.ContractResp
-	err := json.Unmarshal(cr.Result, &resp)
+	err := json.Unmarshal(tx.Result.ContractResult.Result, &resp)
 	if err != nil {
 		return db.BlockChainField{}, err
 	}
 	var bcFiled db.BlockChainField
 	bcFiled.TxId = resp.TxId
 	bcFiled.BlockHeight = resp.BlockHeight
-	bcFiled.ChainTime = time.Now().Unix()
+	bcFiled.ChainTime = tx.Payload.Timestamp
+	bcFiled.ChainId = tx.Payload.ChainId
 	return bcFiled, nil
 }

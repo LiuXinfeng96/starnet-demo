@@ -61,9 +61,6 @@ func ExecAddSatelliteState(s *services.Server) gin.HandlerFunc {
 			RunState:      runState,
 			MeanAnomaly:   req.MeanAnomaly,
 			Speed:         req.Speed,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetExecChainId(),
-			},
 		}
 
 		err = s.InsertOneObjertToDB(satellite)

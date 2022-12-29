@@ -72,9 +72,6 @@ func ExecAddFault(s *services.Server) gin.HandlerFunc {
 			FaultDescription: req.FaultDescription,
 			FaultTime:        faultTime,
 			RepairState:      repairState,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetExecChainId(),
-			},
 		}
 
 		err = s.InsertOneObjertToDB(fault)

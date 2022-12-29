@@ -1,0 +1,4 @@
+/*! 
+ Build based on gin-vue-admin 
+ Time : 1672224415000 */
+System.register(["./index.vue_vue_type_style_index_0_scoped_944c2140_lang-legacy.d62d2fb5.js","./index-legacy.763f76da.js"],(function(e,n){"use strict";var t,c,u,a,i,s,l;return{setters:[function(e){t=e.s},function(e){c=e._,u=e.B,a=e.D,i=e.r,s=e.o,l=e.c}],execute:function(){var n={key:0,class:"gvaIcon gvaIcon-fullscreen-expand"},r={key:1,class:"gvaIcon gvaIcon-fullscreen-shrink"},f={name:"Screenfull"};e("default",c(Object.assign(f,{props:{width:{type:Number,default:22},height:{type:Number,default:22},fill:{type:String,default:"#48576a"}},setup:function(e){u((function(){t.isEnabled&&t.on("change",o)})),a((function(){t.off("change")}));var c=function(){t.isEnabled&&t.toggle()},f=i(!0),o=function(){f.value=!t.isFullscreen};return function(e,t){return s(),l("div",{onClick:c},[f.value?(s(),l("div",n)):(s(),l("div",r))])}}}),[["__scopeId","data-v-944c2140"]]))}}}));

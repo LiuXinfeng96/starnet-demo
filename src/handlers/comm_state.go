@@ -63,9 +63,6 @@ func ExecAddCommState(s *services.Server) gin.HandlerFunc {
 			CommPort:      req.CommPort,
 			CommBandwidth: req.CommBandwidth,
 			LinkLoad:      req.LinkLoad,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetExecChainId(),
-			},
 		}
 
 		err = s.InsertOneObjertToDB(commState)

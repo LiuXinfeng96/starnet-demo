@@ -62,9 +62,6 @@ func ControlAddDebris(s *services.Server) gin.HandlerFunc {
 			Height:       req.Height,
 			Volunme:      req.Volume,
 			Type:         debrisType,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetMasterChainId(),
-			},
 		}
 
 		err = s.InsertOneObjertToDB(debirs)
@@ -304,9 +301,6 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 			Volunme:      req.Volume,
 			Type:         debrisType,
 			DebrisSource: "自主发现",
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetExecChainId(),
-			},
 		}
 
 		err = s.InsertOneObjertToDB(debirs)
@@ -341,35 +335,34 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 				return
 			}
 
-			var result []byte
+			var tx *common.Transaction
 			select {
 			case data, ok := <-txChan:
 				if !ok {
 					s.GetSuLogger().Warnf("subscribe the tx failed, err: tx chan has been closed\n")
 					return
 				}
-				tx, ok := data.(*common.Transaction)
+				tx, ok = data.(*common.Transaction)
 				if !ok {
 					s.GetSuLogger().Warnf("subscribe the tx failed, err: the data type error\n")
 					return
 				}
-				result = tx.Result.ContractResult.Result
 			case <-ctx.Done():
 				s.GetSuLogger().Warnf("subscribe the tx failed, err: subscribe timeout\n")
 				return
 			}
 
 			var irs *models.InstructionContractResp
-			err = json.Unmarshal(result, &irs)
+			err = json.Unmarshal(tx.Result.ContractResult.Result, &irs)
 			if err != nil {
 				s.GetSuLogger().Warnf("invoke gen instruction unmarshal resp failed, err: [%s]\n",
 					err.Error())
 				return
 			}
-			chainTime := time.Now().Unix()
 			debirs.BlockHeight = irs.BlockHeight
 			debirs.TxId = irs.TxId
-			debirs.ChainTime = chainTime
+			debirs.ChainTime = tx.Payload.Timestamp
+			debirs.ChainId = tx.Payload.ChainId
 
 			err = s.UpdateObject(debirs)
 			if err != nil {
@@ -418,9 +411,6 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 					GenInstructionTime:  v.GenInstructionTime,
 					ExecInstructionTime: execInstructionTime,
 					Treaten:             v.Treaten,
-					BlockChainField: db.BlockChainField{
-						ChainId: s.GetExecChainId(),
-					},
 				}
 
 				// 开始执行指令信息入库
@@ -459,9 +449,6 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 					GenInstructionTime:  v.GenInstructionTime,
 					ExecInstructionTime: execInstructionTime,
 					Treaten:             v.Treaten,
-					BlockChainField: db.BlockChainField{
-						ChainId: s.GetExecChainId(),
-					},
 				}
 				// 执行结果入库
 				err = s.InsertOneObjertToDB(endExecI)
@@ -489,9 +476,6 @@ func ExecAddDebris(s *services.Server) gin.HandlerFunc {
 					OperationRecord: "执行指令：" + v.InstructionId,
 					SatelliteId:     v.SatelliteId,
 					SatelliteName:   v.SatelliteName,
-					BlockChainField: db.BlockChainField{
-						ChainId: s.GetExecChainId(),
-					},
 				}
 
 				if err := s.InsertOneObjertToDB(operation); err != nil {

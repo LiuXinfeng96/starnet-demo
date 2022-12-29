@@ -57,9 +57,6 @@ func ExecAddControl(s *services.Server) gin.HandlerFunc {
 			SatelliteAttitude:    req.SatelliteAttitude,
 			SatelliteTemperature: req.SatelliteTemperature,
 			SatellitePower:       req.SatellitePower,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetExecChainId(),
-			},
 		}
 
 		err = s.InsertOneObjertToDB(control)

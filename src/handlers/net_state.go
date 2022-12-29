@@ -61,9 +61,6 @@ func ExecAddNetState(s *services.Server) gin.HandlerFunc {
 			NetworkSegment:   req.NetworkSegment,
 			NetworkState:     networkState,
 			NetworkBandwidth: req.NetworkBandwidth,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetExecChainId(),
-			},
 		}
 
 		err = s.InsertOneObjertToDB(netState)
@@ -161,11 +158,6 @@ func ExecGetNetStateList(s *services.Server) gin.HandlerFunc {
 				NetworkSegment:   netState.NetworkSegment,
 				NetworkState:     db.StateName[netState.NetworkState],
 				NetworkBandwidth: netState.NetworkBandwidth,
-				BaseRespInfo: models.BaseRespInfo{
-					Id:        netState.Id,
-					LastTime:  netState.LastTime,
-					ChainTime: netState.ChainTime,
-				},
 			})
 		}
 

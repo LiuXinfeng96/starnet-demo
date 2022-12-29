@@ -49,9 +49,6 @@ func ControlAddOrbit(s *services.Server) gin.HandlerFunc {
 			OrbitAngle:             req.OrbitAngle,
 			AscendingNodeLongitude: req.AscendingNodeLongitude,
 			Perigee:                req.Perigee,
-			BlockChainField: db.BlockChainField{
-				ChainId: s.GetMasterChainId(),
-			},
 		}
 
 		err = s.InsertOneObjertToDB(orbit)
